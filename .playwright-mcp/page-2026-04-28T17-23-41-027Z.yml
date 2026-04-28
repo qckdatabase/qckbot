@@ -1,0 +1,466 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#MainContent"
+  - region "Announcement" [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e7]: 
+      - link "Click To Get A FREE SEO and CRO Audit ($2k Value)" [ref=e9] [cursor=pointer]:
+        - /url: https://qck.co/pages/site-audit
+  - banner [ref=e12]:
+    - group [ref=e14]:
+      - button "Menu" [ref=e15] [cursor=pointer]:
+        - img [ref=e17]
+    - heading "Qckbot" [level=1] [ref=e18]:
+      - link "Qckbot" [ref=e19] [cursor=pointer]:
+        - /url: /
+        - img "Qckbot" [ref=e20]
+    - link "Try QCK Free!" [ref=e23] [cursor=pointer]:
+      - /url: https://qck.co/pages/site-audit-v2
+  - main [ref=e24]:
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]: 
+        - text: Fastest Growing SEO & CRO Agency of 2024
+      - heading "Drive Clicks That Turn Into Customers" [level=2] [ref=e32]
+      - generic [ref=e33]: Breaking the agency mold with data-driven strategies that boost traffic and conversions through exceptional user experiences.
+      - link "FREE Mini SEO Audit!" [ref=e35] [cursor=pointer]:
+        - /url: /pages/site-audit-v2
+      - generic [ref=e41]: Join the hundreds of Marketing Execs who trust Qckbot
+    - generic [ref=e46]:
+      - generic [ref=e48]: Trusted by 100+ Brands
+      - generic [ref=e51]:
+        - group "1 / 27" [ref=e52]:
+          - img "Vivazen Small Logo" [ref=e53]
+        - group "2 / 27" [ref=e54]:
+          - img "Itsy Ritzy Small Logo" [ref=e55]
+        - group "3 / 27" [ref=e56]:
+          - img "BatchCBD Small Logo Alternate" [ref=e57]
+        - group "4 / 27" [ref=e58]:
+          - img "Assos Small Logo" [ref=e59]
+        - group "5 / 27" [ref=e60]:
+          - img "Soul CBD Small Logo" [ref=e61]
+        - group "6 / 27" [ref=e62]:
+          - img "Orthobracing Small Logo" [ref=e63]
+        - group "7 / 27" [ref=e64]:
+          - img "Sauce Small Logo" [ref=e65]
+        - group "8 / 27" [ref=e66]:
+          - img "Capella Small Logo Alternate" [ref=e67]
+        - group "9 / 27" [ref=e68]:
+          - img "Charity Miles Small Logo" [ref=e69]
+        - group "10 / 27" [ref=e70]:
+          - img "ePlay Books Small Logo" [ref=e71]
+        - group "11 / 27" [ref=e72]:
+          - img "Firefly Small Logo" [ref=e73]
+        - group "12 / 27" [ref=e74]:
+          - img "FOCL CBD Small Logo" [ref=e75]
+        - group "13 / 27" [ref=e76]:
+          - img "Tropical Oasis Small Logo" [ref=e77]
+        - group "14 / 27" [ref=e78]:
+          - img "Sacred Rituel Small Logo" [ref=e79]
+        - group "15 / 27" [ref=e80]:
+          - img "Headrush Small Logo" [ref=e81]
+        - group "16 / 27" [ref=e82]:
+          - img "Woofy Club Small Logo" [ref=e83]
+        - group "17 / 27" [ref=e84]:
+          - img "Fresh Pickle Small Logo" [ref=e85]
+        - group "18 / 27" [ref=e86]:
+          - img "Valence Surface Technologies Small Logo" [ref=e87]
+        - group "19 / 27" [ref=e88]:
+          - img "Space Maker Designs Small Logo" [ref=e89]
+        - group "20 / 27" [ref=e90]:
+          - img "Iles Formula Small Logo" [ref=e91]
+        - group "21 / 27" [ref=e92]:
+          - img "Flowblend Small Logo" [ref=e93]
+        - group "22 / 27" [ref=e94]:
+          - img "Spike Small Logo" [ref=e95]
+        - group "23 / 27" [ref=e96]:
+          - img "Bright Move Small Logo" [ref=e97]
+        - group "24 / 27" [ref=e98]:
+          - img "Fully Vital Small Logo" [ref=e99]
+        - group "25 / 27" [ref=e100]:
+          - img "Netgain Small Logo" [ref=e101]
+        - group "26 / 27" [ref=e102]:
+          - img "Press Modern Massage Small Logo" [ref=e103]
+        - group "27 / 27" [ref=e104]:
+          - img "Nicks Handmade Boots Small Logo" [ref=e105]
+    - generic [ref=e109]:
+      - generic [ref=e110]:
+        - generic [ref=e111]: Case Studies
+        - heading "Hear It From Our Clients" [level=2] [ref=e112]
+      - generic [ref=e113]:
+        - generic [ref=e116]:
+          - group "1 / 8" [ref=e117]:
+            - generic [ref=e118]:
+              - generic [ref=e119]:
+                - generic [ref=e120]: 12x Increase
+                - generic [ref=e121]: In Organic Sales within 6 months
+              - paragraph [ref=e122]: “These guys have been amazing for us. They grew our organic SEO off the charts and generated a huge increase in sales as a result. Now, our site ranks quickly for almost a new product or content we post.”
+              - generic [ref=e126]:
+                - generic [ref=e127]: Dennis Mistrioty
+                - generic [ref=e128]: CEO | hellobatch.com
+          - group "2 / 8" [ref=e131]:
+            - generic [ref=e132]:
+              - generic [ref=e133]:
+                - generic [ref=e134]: 115% Increase
+                - generic [ref=e135]: In Page 1 Keywords in just 5 months
+              - paragraph [ref=e136]: "\"Our keywords have scaled to page one of Google at a pace we have not seen before. We have once had massive massive keywords solely because of pages that Qckbot has created\""
+              - generic [ref=e140]:
+                - generic [ref=e141]: Steve Gmelin
+                - generic [ref=e142]: VP - Digital Sales & Strategy
+          - group "3 / 8" [ref=e145]:
+            - generic [ref=e146]:
+              - generic [ref=e147]:
+                - generic [ref=e148]: 1,000% Increase
+                - generic [ref=e149]: In Organic Traffic
+              - paragraph [ref=e150]: "\"Qckbot ranked us for challenging keywords like 'teeth whitening strips' on the first page, aligning us with major industry players. Their high-touch approach and expert advice set them apart, making them a top choice for SEO and digital marketing. Highly recommend!\""
+              - generic [ref=e154]:
+                - generic [ref=e155]: Christina Ramirez
+                - generic [ref=e156]: CEO - Zimba
+          - group "4 / 8" [ref=e159]:
+            - generic [ref=e160]:
+              - generic [ref=e161]:
+                - generic [ref=e162]: 200% Increase
+                - generic [ref=e163]: In Organic Traffic
+              - paragraph [ref=e164]: "\"Robert and the QCKBOT team are great to work with. We started with SEO and were impressed with their quality and results. They also helped lower our cost per click on Google ads. Knowledgeable, easy to work with, and very responsive. Highly recommend!\""
+              - generic [ref=e168]:
+                - generic [ref=e169]: Lauren Campbell
+                - generic [ref=e170]: CMO - Firefly Recovery
+          - group "5 / 8" [ref=e173]:
+            - generic [ref=e174]:
+              - generic [ref=e175]:
+                - generic [ref=e176]: 125% Increase
+                - generic [ref=e177]: In Page 1 Keywords
+              - paragraph [ref=e178]: “We are so impressed and thankful to have QCKBOT as our SEO partner. They have tackled keywords that other agencies said we impossible and now we are ranking above Amazon and other larger companies. They are strategic and very responsive. Would recommend and have recommended QCKBOT to my network.”
+              - generic [ref=e182]:
+                - generic [ref=e183]: Liz Lenhart
+                - generic [ref=e184]: Director of Growth Marketing - Itzy Ritzy
+          - group "6 / 8" [ref=e187]:
+            - generic [ref=e188]:
+              - generic [ref=e189]:
+                - generic [ref=e190]: 2x Increase
+                - generic [ref=e191]: Organic Traffic in 4 Months
+              - paragraph [ref=e192]: “Robert and his team have been a pleasure to work with, always willing to go the extra mile to support their clients with their knowledge, new ideas and strategies."
+              - generic [ref=e196]:
+                - generic [ref=e197]: Yumi Futatsuka
+                - generic [ref=e198]: Iles Formula
+          - group "7 / 8" [ref=e201]:
+            - generic [ref=e202]:
+              - generic [ref=e203]:
+                - generic [ref=e204]: 10,000% Increase
+                - generic [ref=e205]: In Organic Traffic
+              - paragraph [ref=e206]: "\"From the first phone call, the QCKBOT team has been 100% professional, enjoyable to work with, and an enormous help to our brand. They have surpassed our expectations and are knowledgeable, passionate, and proactive. Hiring QCKBOT has been the best decision for us!\""
+              - generic [ref=e210]:
+                - generic [ref=e211]: Danielle Gandee
+                - generic [ref=e212]: Director of Marketing - Sacred Rituel
+          - group "8 / 8" [ref=e215]:
+            - generic [ref=e216]:
+              - generic [ref=e217]:
+                - generic [ref=e218]: 200% Increase
+                - generic [ref=e219]: In Organic Traffic
+              - paragraph [ref=e220]: “QCKBOT crafted a customized plan focusing on immediate gains in on-page SEO and content creation. Their dedication to my website's success was evident in their strategic approach and exceptional customer service. They promptly addressed my inquiries and kept me informed about ongoing tasks, implementations, and emerging results.”
+              - generic [ref=e224]:
+                - generic [ref=e225]: Nate Prince
+                - generic [ref=e226]: CEO - Flowblend
+        - generic:
+          - generic:
+            - group "1 / 8":
+              - generic:
+                - img "BatchCBD Small Logo Alternate"
+            - group "2 / 8"
+            - group "3 / 8"
+            - group "4 / 8":
+              - generic:
+                - img "Firefly Small Logo"
+            - group "5 / 8":
+              - generic:
+                - img "Itsy Ritzy Small Logo"
+            - group "6 / 8":
+              - generic:
+                - img "Iles Formula Small Logo"
+            - group "7 / 8":
+              - generic:
+                - img "Sacred Rituel Small Logo"
+            - group "8 / 8":
+              - generic:
+                - img "Flowblend Small Logo"
+    - group "Tolstoy Carousel" [ref=e236]:
+      - generic "Play video - 1.3 - Reel 1 Soul CBD - John Hagen.mp4" [ref=e238] [cursor=pointer]:
+        - generic "1.3 - Reel 1 Soul CBD - John Hagen.mp4" [ref=e239]
+        - button "Open Tolstoy widget" [ref=e241]:
+          - img [ref=e242]
+      - generic "Play video - 1.2 - Reel 3 - Qckbot - Itzy Ritzy Testimonial.mp4" [ref=e245] [cursor=pointer]:
+        - generic "1.2 - Reel 3 - Qckbot - Itzy Ritzy Testimonial.mp4" [ref=e246]
+        - button "Open Tolstoy widget" [ref=e248]:
+          - img [ref=e249]
+      - generic "Play video - 1.8 Reel 3 QCKBOT .mp4" [ref=e252] [cursor=pointer]:
+        - generic "1.8 Reel 3 QCKBOT .mp4" [ref=e253]
+        - button "Open Tolstoy widget" [ref=e255]:
+          - img [ref=e256]
+      - generic "Play video - 1.1 - SF 2 - QCKBOT - Jake from Aloha Testimonial.mp4" [ref=e259] [cursor=pointer]:
+        - generic "1.1 - SF 2 - QCKBOT - Jake from Aloha Testimonial.mp4" [ref=e260]
+        - button "Open Tolstoy widget" [ref=e262]:
+          - img [ref=e263]
+      - generic "Play video - 1.1 - Reel 3 riverside_james_raw-video-cfr_ryan_hollander's st_0015.mp4" [ref=e266] [cursor=pointer]:
+        - generic "1.1 - Reel 3 riverside_james_raw-video-cfr_ryan_hollander's st_0015.mp4" [ref=e267]
+        - button "Open Tolstoy widget" [ref=e269]:
+          - img [ref=e270]
+      - generic "Play video - 1.1 - Reel 3 QCKBOT - Rachel from Press Modern.mp4" [ref=e273] [cursor=pointer]:
+        - generic "1.1 - Reel 3 QCKBOT - Rachel from Press Modern.mp4" [ref=e274]
+        - button "Open Tolstoy widget" [ref=e276]:
+          - img [ref=e277]
+    - generic [ref=e280]:
+      - generic [ref=e282]:
+        - generic [ref=e283]: What Do We Do?
+        - heading "Drive Highly Converting Traffic Through Full Funnel Content Production At Scale." [level=2] [ref=e284]
+      - generic [ref=e287]: Your Products Are The Solution To Your Audience's Problems - They Just Can't Find You.
+      - generic [ref=e290]:
+        - group "1 / 1" [ref=e293]:
+          - generic [ref=e294]:
+            - generic [ref=e296]: 
+            - generic [ref=e297]:
+              - 'heading "SEO: Drive Sales through Brand Awareness" [level=2] [ref=e298]'
+              - generic [ref=e299]: Our SEO services are designed to boost your website's ranking on search engines. We create content funnels that drive new customers to your site and lead them through the buyer’s journey.
+        - text: 
+    - generic [ref=e303]:
+      - generic [ref=e305]: Work For Results
+      - generic [ref=e307]:
+        - generic [ref=e308]:
+          - generic [ref=e310]: 
+          - generic [ref=e311]:
+            - generic [ref=e318]: "0"
+            - text: +
+          - heading "Live Pages" [level=2] [ref=e319]
+          - generic [ref=e320]: We've successfully launched over 60,000 pages for our clients, helping them expand their online presence and reach their target audience effectively
+        - generic [ref=e321]:
+          - generic [ref=e323]: 
+          - generic [ref=e324]:
+            - generic [ref=e331]: "0"
+            - text: X
+          - heading "Traffic Increase" [level=2] [ref=e332]
+          - generic [ref=e333]: On average, we've achieved a remarkable 12x increase in organic traffic for our clients, showcasing our expertise in driving significant digital growth
+        - generic [ref=e334]:
+          - generic [ref=e336]: 
+          - generic [ref=e344]: "0"
+          - heading "Hours Saved" [level=2] [ref=e345]
+          - generic [ref=e346]: We've saved our clients over 20,000 hours of internal work, allowing them to focus on their core business while we handle the complexities of digital marketing and SEO
+    - generic [ref=e351]:
+      - generic [ref=e352]:
+        - generic [ref=e353]:
+          - generic [ref=e354]: Testimonials
+          - heading "We Are The Anti-Agency For A Reason..." [level=2] [ref=e355]
+        - generic [ref=e356]: Hear Directly From Our Clients Why They Love Working With Us.
+      - generic [ref=e357]:
+        - text:                  
+        - generic [ref=e358]:
+          - generic:
+            - generic:
+              - group "1 / 7":
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: 
+                      - generic: "5.00"
+                    - paragraph: "\"Zimba has been working with Qckbot for the last 9 months or so and could not be any more satisfied with the results. Coming into the engagement, we had very specific and difficult keywords we wanted to rank for, and not only did Qckbot obtain those, but they got us on the first page. As a result, we are now ranking with the major players in our industry in a very short amount of time. Qckbot is truly at the cutting edge of SEO and all things digital marketing. Highly recommend!\""
+                    - generic:
+                      - generic:
+                        - generic: Christina Ramirez
+                        - generic: Founder & President | shopzimba.com
+              - group "2 / 7":
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: 
+                      - generic: "5.00"
+                    - paragraph: “The team at Qckbot has been exceptional in optimizing my company’s online presence. In just 2 months of working together, we saw a 53% increase in organic traffic, a truly impressive feat. Their approach is transparent and proactive—qualities that are refreshing in the world of SEO where many companies keep you in the dark.”
+                    - generic:
+                      - generic:
+                        - generic: Nate Prince
+                        - generic: CEO | flowblend.com
+              - group "3 / 7":
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: 
+                      - generic: "5.00"
+                    - paragraph: “We are so impressed and thankful to have QCKBOT as our SEO partner. They have tackeled keywords that other agencies said we impossible and now we are ranking above Amazon and other larger companies.”
+                    - generic:
+                      - generic:
+                        - generic: Liz Lenhart
+                        - generic: Director of Growth Marketing | itzyritzy.com
+              - group "4 / 7":
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: 
+                      - generic: "5.00"
+                    - paragraph: “These guys have been amazing for us. They grew our organic SEO off the charts and generated a huge increase in sales as a result. Now, our site ranks quickly for almost any new product or content we post.”
+                    - generic:
+                      - generic:
+                        - generic: Dennis Mistrioty
+                        - generic: CEO | hellobatch.com
+              - group "5 / 7":
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: 
+                      - generic: "5.00"
+                    - paragraph: “Robert and the entire team at QCKBOT have been great to work with. We began working with QCKBOT on SEO and have been impressed with the quality of the work as well as the results. Recently, we asked QCKBOT to manage our Google ads and they have helped us bring our cost per click down significantly. The team at QCKBOT are knowledgeable, easy to work with and very responsive. Highly recommend.”
+                    - generic:
+                      - generic:
+                        - generic: Lauren Campbell
+                        - generic: CMO | recoveryfirefly.com
+              - group "6 / 7":
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: 
+                      - generic: "5.00"
+                    - paragraph: “The team at QCKBOT from the initial phone call has been 100% professional, enjoyable to work with and an enormous help to our growing brand. Of all the teams we have hired to help us grow, Robert and his dedicated team have surpassed our expectations. We value this partnership so much and highly recommend partnering with them. They are knowledgeable, passionate about what they do and roll up their sleeves to get the job done on time if not earlier than anticipated. The best decision we have made is to hire QCKBOT!”
+                    - generic:
+                      - generic:
+                        - generic: Danielle Gandee
+                        - generic: Director of Marketing | www.sacredrituel.com
+              - group "7 / 7":
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: 
+                      - generic: "5.00"
+                    - paragraph: “Qckbot has made significant improvements in our organic rankings in just 6 months. They are nimble and flexible and overdeliver. ”
+                    - generic:
+                      - generic:
+                        - generic: Shuyler Mowe
+                        - generic: CEO | nicksboots.com
+    - generic [ref=e362]:
+      - generic [ref=e363]:
+        - generic [ref=e364]: Features
+        - heading "Customized Services To Meet Your Unique Needs" [level=2] [ref=e365]
+      - generic [ref=e366]: Experience a transformative online journey with our comprehensive feature suite
+      - generic [ref=e367]:
+        - generic [ref=e370]:
+          - heading "Keyword Research" [level=3] [ref=e371]
+          - generic [ref=e372]: Using proprietary tech, we identify top keywords, analyze competitors, find exploitable gaps, and define your total addressable market in search. Then we put that data to work for you
+        - generic [ref=e375]:
+          - heading "Content Marketing" [level=3] [ref=e376]
+          - generic [ref=e377]: We develop a comprehensive content marketing strategy, identify improvement areas, offer optimization recommendations, and create and promote top-tier content that ranks, drives traffic, and converts customers
+        - generic [ref=e380]:
+          - heading "Technical Optimization" [level=3] [ref=e381]
+          - generic [ref=e382]: We conduct thorough technical audits to identify and fix site issues, provide monthly performance updates, and offer detailed guidance on site speed, core web vitals, architecture, internal links, and international optimization
+        - generic [ref=e385]:
+          - heading "Link Building" [level=3] [ref=e386]
+          - generic [ref=e387]: We craft an optimal link-building strategy, securing high-quality links on authoritative, relevant sites to boost your content's authority, improve rankings, and drive more traffic and conversions
+        - generic [ref=e390]:
+          - heading "Market Analysis" [level=3] [ref=e391]
+          - generic [ref=e392]: We use our proprietary process to compile a vast dataset of top keyword opportunities in your market, benchmark your performance against competitors, identify unique opportunities, and chart a path for you to dominate your search market
+        - generic [ref=e395]:
+          - heading "Paid Ads" [level=3] [ref=e396]
+          - generic [ref=e397]: Utilizing innovative methods and advanced technology, we compile a rich database of top-performing keywords in your market. We assess your competitive positioning, identify untapped opportunities, and create a targeted strategy for search advertising dominance
+        - generic [ref=e400]:
+          - heading "Design" [level=3] [ref=e401]
+          - generic [ref=e402]: Our design services blend creativity and functionality to craft captivating visuals tailored to your brand. With meticulous attention to detail and a deep understanding of your goals, we deliver designs that resonate with your audience and elevate your brand across all platforms
+        - generic [ref=e405]:
+          - heading "Development" [level=3] [ref=e406]
+          - generic [ref=e407]: We merge expertise and innovation to craft captivating digital platforms that reflect your brand. Using cutting-edge technology, we engineer seamless user experiences that engage and convert. Whether launching a new site or revamping an existing one, our tailored solutions ensure your online presence drives results
+    - generic [ref=e410]:
+      - generic [ref=e411]:
+        - generic [ref=e412]: Steps
+        - heading "An Industry-Leading High Touch SEO Process" [level=2] [ref=e413]
+      - generic [ref=e416]:
+        - generic [ref=e417]:
+          - generic [ref=e419]:
+            - generic [ref=e421]: "1"
+            - heading "Planning & Roadmap" [level=3] [ref=e422]
+          - paragraph [ref=e424]: We analyze your site, competition, and market to craft a targeted SEO & PPC strategy. Our AI-powered processes & tech provide real-world data, outlining a roadmap to achieve your goals.
+        - generic [ref=e428] [cursor=pointer]:
+          - generic [ref=e430]: "2"
+          - heading "Kick-Off & On-Boarding" [level=3] [ref=e431]
+        - generic [ref=e434] [cursor=pointer]:
+          - generic [ref=e436]: "3"
+          - heading "Strategy, Recommendations & Implementation" [level=3] [ref=e437]
+        - generic [ref=e440] [cursor=pointer]:
+          - generic [ref=e442]: "4"
+          - heading "Production & Promotion" [level=3] [ref=e443]
+        - generic [ref=e446] [cursor=pointer]:
+          - generic [ref=e448]: "5"
+          - heading "Report & Analysis" [level=3] [ref=e449]
+    - generic [ref=e452]:
+      - generic [ref=e453]:
+        - generic [ref=e454]: Frequently Asked Questions
+        - heading "Questions & Answers" [level=2] [ref=e455]
+      - generic [ref=e456]: Clarify any uncertainties you might have, ensuring a smooth and hassle-free experience for everyone.
+      - generic [ref=e458]:
+        - generic [ref=e459]:
+          - button "What Is Keyword Research And Why It Is Important?" [ref=e460] [cursor=pointer]:
+            - heading "What Is Keyword Research And Why It Is Important?" [level=3] [ref=e462]
+            - img [ref=e464]
+          - paragraph [ref=e468]: Keyword research is crucial for businesses aiming to enhance online visibility. It involves identifying the words and phrases potential customers use to find products or services. By understanding target audience search behavior, businesses can optimize website content, improve search engine rankings, attract more organic traffic, and enhance advertising campaigns. Ultimately, keyword research is integral to online marketing strategies, enabling businesses to connect with their audience, boost visibility, and drive sales.
+        - button "What Is SEO?" [ref=e470] [cursor=pointer]:
+          - heading "What Is SEO?" [level=3] [ref=e472]
+          - img [ref=e474]
+        - button "What Is An SEO Agency?" [ref=e477] [cursor=pointer]:
+          - heading "What Is An SEO Agency?" [level=3] [ref=e479]
+          - img [ref=e481]
+    - generic [ref=e487]:
+      - generic [ref=e488]:
+        - generic [ref=e489]: 
+        - text: 5.00 from 142+ reviews
+      - heading "Ready to get started?" [level=2] [ref=e490]
+      - generic [ref=e491]: Schedule a Discovery Call with us below to see where we can help!
+      - link "Schedule a Free Site Audit" [ref=e493] [cursor=pointer]:
+        - /url: /pages/site-audit
+  - contentinfo [ref=e497]:
+    - generic [ref=e500]:
+      - generic [ref=e501]:
+        - link "Qckbot" [ref=e502] [cursor=pointer]:
+          - /url: /
+          - img "Qckbot" [ref=e503]
+        - generic [ref=e504]: We aim to bridge gaps, foster innovation, and drive progress by developing digital experiences that are intuitive, inclusive, and inspiring.
+      - group [ref=e506]:
+        - generic "Core services" [ref=e507] [cursor=pointer]:
+          - heading "Core services" [level=2] [ref=e508]
+          - img [ref=e509]
+      - group [ref=e512]:
+        - generic "Learn" [ref=e513] [cursor=pointer]:
+          - heading "Learn" [level=2] [ref=e514]
+          - img [ref=e515]
+      - generic [ref=e518]:
+        - heading "Stay Up to Date with Cutting Edge Digital Marketing News" [level=3] [ref=e519]
+        - paragraph [ref=e520]: Get notified about new updates, products, tips and tutorials. No spam. You can always unsubscribe.
+        - generic [ref=e525]:
+          - textbox "Your Email" [ref=e528]
+          - button "Subscribe" [ref=e530] [cursor=pointer]
+    - generic [ref=e533]:
+      - generic [ref=e535]:
+        - text: © 2026
+        - link "QCK" [ref=e536] [cursor=pointer]:
+          - /url: /
+        - text: .
+      - list [ref=e537]:
+        - listitem [ref=e538]:
+          - link "Privacy policy" [ref=e540] [cursor=pointer]:
+            - /url: /policies/privacy-policy
+        - listitem [ref=e541]:
+          - link "Refund policy" [ref=e543] [cursor=pointer]:
+            - /url: /policies/refund-policy
+        - listitem [ref=e544]:
+          - link "Shipping policy" [ref=e546] [cursor=pointer]:
+            - /url: /policies/shipping-policy
+        - listitem [ref=e547]:
+          - link "Contact information" [ref=e549] [cursor=pointer]:
+            - /url: /policies/contact-information
+        - listitem [ref=e550]:
+          - link "Terms of service" [ref=e552] [cursor=pointer]:
+            - /url: /policies/terms-of-service
+  - group "Tolstoy bubble widget" [ref=e553]:
+    - generic "Open Tolstoy" [ref=e554]:
+      - generic "Open Tolstoy widget" [ref=e555] [cursor=pointer]:
+        - button "Close Tolstoy widget" [ref=e557]:
+          - img [ref=e558]
+        - 'generic "Tolstoy video preview : Founder Video #8"'

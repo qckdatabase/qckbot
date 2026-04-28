@@ -1,0 +1,38 @@
+[    1160ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1160ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1160ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1160ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1160ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1160ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1160ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1160ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1160ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1160ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1160ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1160ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1160ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1160ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1160ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1160ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1160ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1160ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1160ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1160ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1160ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1160ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1160ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1160ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1160ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1160ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1160ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1160ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1161ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1161ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1161ms] [WARNING] Failed parsing 'srcset' attribute value since it has an unknown descriptor. @ :0
+[    1161ms] [WARNING] Dropped srcset candidate "Liquid" @ :0
+[    1675ms] [LOG] AskAIController initGlobal (header icon) @ https://play.gotolstoy.com/widget-v2/widget.js:57
+[    1677ms] [LOG] OnYou log: FloatingSearchBarController: Search bar is disabled @ https://play.gotolstoy.com/widget-v2/widget.js:43
+[    1678ms] [LOG] OnYou log: ChatBubbleController: Chat bubble is disabled. @ https://play.gotolstoy.com/widget-v2/widget.js:43
+[    1678ms] [LOG] AskAIController initGlobal skipped - Ask AI icon not enabled @ https://play.gotolstoy.com/widget-v2/widget.js:57
+[    2145ms] [INFO] k-web-pixel-version 1 @ https://qck.co/web-pixels/strict/app/web-pixel-1790247167@524f6c1ee37bacdca7657a665bdca589.js:0
+[    2489ms] [LOG] [FloatingWidget] continue legacy widget flow @ https://widget.gotolstoy.com/we/widget.js:78
