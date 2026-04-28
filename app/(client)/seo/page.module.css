@@ -1,0 +1,120 @@
+.page {
+  max-width: 1200px;
+}
+
+.page h1 {
+  font-size: 24px;
+  margin-bottom: var(--space-6);
+}
+
+.loading {
+  color: var(--color-text-muted);
+}
+
+.error {
+  color: var(--color-error);
+  margin-bottom: var(--space-4);
+}
+
+.retryButton {
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-accent-dark);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (max-width: 768px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.kpiCard {
+  text-align: center;
+}
+
+.kpiLabel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-2);
+}
+
+.kpiValue {
+  font-size: 32px;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  color: var(--color-text);
+}
+
+.chartCard {
+  margin-bottom: var(--space-6);
+}
+
+.chartCard h3 {
+  font-size: 16px;
+  margin-bottom: var(--space-4);
+}
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  height: 150px;
+  padding-top: var(--space-4);
+}
+
+.chartBar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.chartBarFill {
+  width: 100%;
+  background: var(--color-accent-dark);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  min-height: 4px;
+}
+
+.chartBarLabel {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+}
+
+.tablesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 1024px) {
+  .tablesGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.urlCell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
