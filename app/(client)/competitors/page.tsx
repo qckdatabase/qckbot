@@ -119,7 +119,7 @@ export default function CompetitorsPage() {
           <div className={styles.empty}>
             <p>No competitors found.</p>
             <p className={styles.emptyHint}>
-              Click "Refresh Competitors" to discover competitors from Ahrefs.
+              Click &ldquo;Refresh Competitors&rdquo; to discover competitors from Ahrefs.
             </p>
           </div>
         </Card>

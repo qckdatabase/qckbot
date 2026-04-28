@@ -13,10 +13,13 @@ export default function ChangePasswordPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
+  const [supabase] = useState(() =>
+    typeof window !== 'undefined' ? createClient() : null
+  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!supabase) return
     setError('')
 
     if (password !== confirm) {
