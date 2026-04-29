@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Check, Copy } from 'lucide-react'
 import { Modal } from '@/components/ui/modal'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,7 @@ export function AddClientModal() {
   const [loading, setLoading] = useState(false)
   const [tempPassword, setTempPassword] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,13 +51,26 @@ export function AddClientModal() {
     setEmail('')
     setTempPassword(null)
     setError('')
+    setCopied(false)
     router.refresh()
   }
 
-  const copyPassword = () => {
-    if (tempPassword) {
-      navigator.clipboard.writeText(tempPassword)
+  const copyPassword = async () => {
+    if (!tempPassword) return
+    try {
+      await navigator.clipboard.writeText(tempPassword)
+    } catch {
+      const ta = document.createElement('textarea')
+      ta.value = tempPassword
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.select()
+      try { document.execCommand('copy') } catch {}
+      document.body.removeChild(ta)
     }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
@@ -98,8 +113,23 @@ export function AddClientModal() {
             <p className={styles.tempLabel}>Temporary Password (send to client):</p>
             <div className={styles.passwordBox}>
               <code>{tempPassword}</code>
-              <Button variant="secondary" size="sm" onClick={copyPassword}>
-                Copy
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={copyPassword}
+                aria-label={copied ? 'Copied' : 'Copy password'}
+              >
+                {copied ? (
+                  <>
+                    <Check size={14} />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy size={14} />
+                    Copy
+                  </>
+                )}
               </Button>
             </div>
             <p className={styles.note}>
