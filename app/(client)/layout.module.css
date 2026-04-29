@@ -5,7 +5,20 @@
 
 .main {
   flex: 1;
+  min-width: 0;
   background: var(--color-surface);
   padding: var(--space-6);
   overflow-y: auto;
+}
+
+@media (max-width: 1023px) {
+  .layout {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .main {
+    padding: var(--space-4);
+  }
 }
