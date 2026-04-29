@@ -35,3 +35,6 @@ next-env.d.ts
 # Superpowers
 .superpowers/
 .playwright-mcp/
+
+# Supabase CLI local cache
+supabase/.temp/
