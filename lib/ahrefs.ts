@@ -66,16 +66,27 @@ export async function getSiteMetrics(domain: string): Promise<AhrefsMetrics> {
       '/site-explorer/metrics',
       { target: domain, date, mode: 'subdomains', protocol: 'both' }
     ),
-    ahrefsGet<{ metrics: { live: number; live_refdomains: number } }>(
-      '/site-explorer/backlinks-stats',
-      { target: domain, date }
-    ),
+    ahrefsGet<{
+      metrics: {
+        live?: number
+        live_refdomains?: number
+        refdomains?: number
+      }
+    }>('/site-explorer/backlinks-stats', { target: domain, date }),
   ])
+
+  const blStats = backlinksRes.metrics || {}
+  const backlinkCount =
+    blStats.live ?? blStats.live_refdomains ?? blStats.refdomains ?? 0
+
+  if (backlinkCount === 0) {
+    console.warn('[ahrefs] backlinks-stats returned 0/missing. Raw metrics:', blStats)
+  }
 
   return {
     domain_rating: drRes.domain_rating?.domain_rating ?? 0,
     organic_keywords: metricsRes.metrics?.org_keywords ?? 0,
-    backlinks: backlinksRes.metrics?.live_refdomains ?? 0,
+    backlinks: backlinkCount,
     est_monthly_traffic: metricsRes.metrics?.org_traffic ?? 0,
   }
 }
