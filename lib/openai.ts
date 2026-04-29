@@ -39,19 +39,27 @@ interface TenantContext {
     products: string[]
   }
   ai_ranking?: {
-    keyword: string
-    user_rank: number | null
-    generated_at: string
-    rankings: Array<{
-      rank: number
-      brand: string
-      domain: string
-      reason: string
-      isUser: boolean
-      domain_rating: number
-      traffic: number
-      backlinks: number
+    themes: Array<{
+      theme: string
+      keyword: string
+      category: string
+      user_rank: number | null
+      rankings: Array<{
+        rank: number
+        brand: string
+        domain: string
+        reason: string
+        isUser: boolean
+        domain_rating: number
+        traffic: number
+        backlinks: number
+      }>
     }>
+    visibility_score: number
+    avg_rank: number | null
+    ranked_in_count: number
+    total_themes: number
+    generated_at: string
   } | null
   top_keywords?: Array<{
     keyword: string
@@ -92,21 +100,19 @@ ${
   !context.ai_ranking
     ? '(no AI ranking computed yet — tell user to click "Run" on the AI Ranking page)'
     : [
-        `Inferred category keyword: "${context.ai_ranking.keyword}"`,
-        `Your rank for that keyword: ${
-          context.ai_ranking.user_rank
-            ? `#${context.ai_ranking.user_rank}`
-            : 'Not in top 10'
-        }`,
+        `AI Visibility: ranked in ${context.ai_ranking.ranked_in_count}/${context.ai_ranking.total_themes} themes (${Math.round(context.ai_ranking.visibility_score * 100)}%)`,
+        `Avg rank where present: ${context.ai_ranking.avg_rank !== null ? `#${context.ai_ranking.avg_rank.toFixed(1)}` : 'n/a'}`,
         `Generated: ${new Date(context.ai_ranking.generated_at).toISOString().slice(0, 10)}`,
         ``,
-        `Top 10 leaderboard:`,
-        ...context.ai_ranking.rankings
-          .slice(0, 10)
-          .map(
-            (r) =>
-              `  ${r.rank}. ${r.brand}${r.isUser ? ' (YOU)' : ''} — DR ${r.domain_rating}, traffic ${r.traffic}, backlinks ${r.backlinks}. Reason: ${r.reason}`
-          ),
+        `Per-theme breakdown:`,
+        ...context.ai_ranking.themes.map((t) => {
+          const rankLabel = t.user_rank ? `#${t.user_rank}` : 'NOT RANKED'
+          const top3 = t.rankings
+            .slice(0, 3)
+            .map((r) => `${r.brand}${r.isUser ? ' (YOU)' : ''}`)
+            .join(', ')
+          return `  • [${t.theme}] keyword "${t.keyword}" — your rank: ${rankLabel}. Top 3: ${top3}`
+        }),
       ].join('\n')
 }
 

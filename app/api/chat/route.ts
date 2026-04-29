@@ -208,18 +208,26 @@ export async function POST(request: Request) {
     .maybeSingle() as {
       data: {
         payload: {
-          keyword: string
-          user_rank: number | null
-          rankings: Array<{
-            rank: number
-            brand: string
-            domain: string
-            reason: string
-            isUser: boolean
-            domain_rating: number
-            traffic: number
-            backlinks: number
+          themes?: Array<{
+            theme: string
+            keyword: string
+            category: string
+            user_rank: number | null
+            rankings: Array<{
+              rank: number
+              brand: string
+              domain: string
+              reason: string
+              isUser: boolean
+              domain_rating: number
+              traffic: number
+              backlinks: number
+            }>
           }>
+          visibility_score?: number
+          avg_rank?: number | null
+          ranked_in_count?: number
+          total_themes?: number
         }
         generated_at: string
       } | null
@@ -293,12 +301,14 @@ export async function POST(request: Request) {
       primary_keyword: c.primary_keyword || '',
     })),
     live_keywords: await getLiveKeywords(tenant?.sitemap_url),
-    ai_ranking: aiRankingRow?.payload
+    ai_ranking: aiRankingRow?.payload?.themes?.length
       ? {
-          keyword: aiRankingRow.payload.keyword,
-          user_rank: aiRankingRow.payload.user_rank,
+          themes: aiRankingRow.payload.themes,
+          visibility_score: aiRankingRow.payload.visibility_score ?? 0,
+          avg_rank: aiRankingRow.payload.avg_rank ?? null,
+          ranked_in_count: aiRankingRow.payload.ranked_in_count ?? 0,
+          total_themes: aiRankingRow.payload.total_themes ?? 0,
           generated_at: aiRankingRow.generated_at,
-          rankings: aiRankingRow.payload.rankings || [],
         }
       : null,
     top_keywords: seoSnapshot?.payload?.keywords || [],

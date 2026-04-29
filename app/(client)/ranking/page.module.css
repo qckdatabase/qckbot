@@ -46,6 +46,137 @@
   color: var(--color-text-muted);
 }
 
+.notRanked {
+  padding: var(--space-4) var(--space-5);
+  border-left: 3px solid var(--color-warning, #f59e0b);
+  background: var(--color-warning-bg, rgba(245, 158, 11, 0.08));
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+}
+
+.notRankedTitle {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: var(--space-1);
+}
+
+.notRankedBody {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.scoreCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.scoreMain {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.scoreValue {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.scoreLabel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: var(--space-1);
+}
+
+.scoreStats {
+  display: flex;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.scoreStat {
+  display: flex;
+  flex-direction: column;
+}
+
+.scoreStatValue {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.scoreStatLabel {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.themeList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.themeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-4);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  gap: var(--space-3);
+}
+
+.themeHeaderLeft {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.themeName {
+  font-weight: 600;
+  font-size: 15px;
+  text-transform: capitalize;
+}
+
+.themeMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.themeKeyword {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.themeHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chevron {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
 .toggle {
   padding: var(--space-2) var(--space-4);
   border: none;

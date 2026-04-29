@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import { getKeywords } from './ahrefs'
 
 let _client: OpenAI | null = null
 
@@ -86,6 +87,33 @@ function normalizeDomain(input: string): string {
     .replace(/\/.*$/, '')
 }
 
+function brandTokens(store: string): string[] {
+  const root = store.split('.')[0] || ''
+  const tokens = root.split(/[-_]/).filter((t) => t.length >= 3)
+  return tokens.length ? tokens : [root].filter(Boolean)
+}
+
+async function topRankingKeywords(store: string, count = 8): Promise<string[]> {
+  try {
+    const kws = await getKeywords(store, 100)
+    if (!kws.length) return []
+    const brands = brandTokens(store)
+    const isBrandKw = (k: string) => {
+      const lower = k.toLowerCase()
+      return brands.some((b) => lower.includes(b))
+    }
+    return kws
+      .filter((k) => k.keyword && k.volume > 0 && k.position > 0 && k.position <= 50)
+      .filter((k) => !isBrandKw(k.keyword))
+      .sort((a, b) => b.volume - a.volume)
+      .slice(0, count)
+      .map((k) => k.keyword)
+  } catch (err) {
+    console.error(`Ahrefs keyword lookup failed for ${store}:`, err)
+    return []
+  }
+}
+
 export async function findOrganicCompetitors({
   store,
   brandContext,
@@ -94,6 +122,11 @@ export async function findOrganicCompetitors({
   brandContext?: string
 }): Promise<OrganicCompetitorsResult> {
   const normalized = normalizeDomain(store)
+  const seedKeywords = await topRankingKeywords(normalized, 8)
+
+  const keywordBlock = seedKeywords.length
+    ? `Real organic keywords the target site already ranks for (from Ahrefs, ordered by search volume):\n${seedKeywords.map((k, i) => `${i + 1}. ${k}`).join('\n')}\nUse THESE exact keywords as the seed set in step 1. Do not invent your own.`
+    : `No Ahrefs keyword data available. Infer 3-6 representative head/torso keywords from the domain and brand context.`
 
   const response = await getClient().responses.create({
     model: 'gpt-4o',
@@ -105,7 +138,7 @@ export async function findOrganicCompetitors({
           `You are an SEO competitive analyst. Use web search to identify the top 10 ORGANIC SEARCH competitors for a given target site.\n` +
           `Organic competitors are sites that rank in Google's organic results for the SAME or HIGHLY OVERLAPPING keyword set as the target — not just brands in the same category, but sites you would actually find on the same SERPs.\n` +
           `Methodology:\n` +
-          `1. Identify 3-6 representative head/torso keywords the target site likely ranks for, based on its niche.\n` +
+          `1. Use the seed keyword set provided in the user message (these are real keywords the target ranks for). If none provided, infer 3-6 from the domain.\n` +
           `2. Search those keywords on the open web. Note which non-target domains repeatedly appear in organic results (skip ads, marketplaces like Amazon/eBay/Etsy unless they are the only obvious competitor).\n` +
           `3. Return the 10 most consistent overlapping organic competitors, ranked by overlap strength.\n` +
           `For each competitor: brand name, ROOT DOMAIN of the competitor itself (not source article), 1-sentence reason citing the overlap, source URL from web search, up to 5 shared keyword themes, and an estimated domain_rating 0-100 based on how often and prominently the site appeared in organic results.\n` +
@@ -116,7 +149,8 @@ export async function findOrganicCompetitors({
         role: 'user',
         content:
           `Target site: ${normalized}\n` +
-          `Brand context: ${brandContext || '(none provided — infer from the domain)'}`,
+          `Brand context: ${brandContext || '(none provided — infer from the domain)'}\n\n` +
+          keywordBlock,
       },
     ],
     text: {

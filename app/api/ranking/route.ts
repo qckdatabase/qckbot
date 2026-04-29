@@ -3,7 +3,7 @@ import { requireTenant } from '@/lib/auth/api'
 import { getDb } from '@/lib/auth/db'
 import { rankAuto } from '@/lib/ai-ranking'
 
-export const maxDuration = 180
+export const maxDuration = 600
 
 export async function GET() {
   const auth = await requireTenant()
