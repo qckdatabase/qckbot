@@ -4,6 +4,7 @@ import { useEffect, useCallback, useState, useMemo } from 'react'
 import { Search, X } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { useRefreshStatus } from '@/lib/use-refresh-status'
 import styles from './page.module.css'
 
 type Intent =
@@ -60,6 +61,7 @@ export default function KeywordsPage() {
   const [filter, setFilter] = useState<Intent | 'all'>('all')
   const [sourceFilter, setSourceFilter] = useState<Source | 'all'>('all')
   const [search, setSearch] = useState('')
+  const { status: refreshStatus, refetch: refetchRefreshStatus } = useRefreshStatus()
 
   const loadCached = useCallback(async () => {
     setError('')
@@ -89,12 +91,19 @@ export default function KeywordsPage() {
       setError(err instanceof Error ? err.message : 'Failed to discover keywords')
     } finally {
       setRunning(false)
+      refetchRefreshStatus()
     }
-  }, [])
+  }, [refetchRefreshStatus])
 
   useEffect(() => {
     loadCached().finally(() => setLoading(false))
   }, [loadCached])
+
+  useEffect(() => {
+    if (!refreshStatus.refresh_in_flight) {
+      loadCached()
+    }
+  }, [refreshStatus.refresh_in_flight, loadCached])
 
   const sourceCounts = useMemo(() => {
     const c: Record<Source, number> = { websearch: 0, campaign: 0, seo: 0 }
@@ -123,8 +132,18 @@ export default function KeywordsPage() {
     <div className={styles.page}>
       <div className={styles.header}>
         <h1>Keyword Tracker</h1>
-        <Button variant="secondary" size="sm" onClick={run} loading={running}>
-          {data ? 'Regenerate' : 'Run'}
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={run}
+          loading={running || refreshStatus.refresh_in_flight}
+          disabled={refreshStatus.refresh_in_flight}
+        >
+          {refreshStatus.refresh_in_flight
+            ? 'Refreshing...'
+            : data
+              ? 'Regenerate'
+              : 'Run'}
         </Button>
       </div>
 

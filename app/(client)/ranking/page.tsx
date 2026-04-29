@@ -4,6 +4,7 @@ import { useEffect, useCallback, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { useRefreshStatus } from '@/lib/use-refresh-status'
 import styles from './page.module.css'
 
 interface RankingEntry {
@@ -38,6 +39,7 @@ export default function RankingPage() {
   const [loading, setLoading] = useState(true)
   const [running, setRunning] = useState(false)
   const [error, setError] = useState('')
+  const { status: refreshStatus, refetch: refetchRefreshStatus } = useRefreshStatus()
 
   const loadCached = useCallback(async () => {
     setError('')
@@ -71,19 +73,36 @@ export default function RankingPage() {
       setError(err instanceof Error ? err.message : 'Failed to compute AI ranking')
     } finally {
       setRunning(false)
+      refetchRefreshStatus()
     }
-  }, [])
+  }, [refetchRefreshStatus])
 
   useEffect(() => {
     loadCached().finally(() => setLoading(false))
   }, [loadCached])
 
+  useEffect(() => {
+    if (!refreshStatus.refresh_in_flight) {
+      loadCached()
+    }
+  }, [refreshStatus.refresh_in_flight, loadCached])
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <h1>AI Ranking</h1>
-        <Button variant="secondary" size="sm" onClick={run} loading={running}>
-          {data ? 'Regenerate' : 'Run'}
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={run}
+          loading={running || refreshStatus.refresh_in_flight}
+          disabled={refreshStatus.refresh_in_flight}
+        >
+          {refreshStatus.refresh_in_flight
+            ? 'Refreshing...'
+            : data
+              ? 'Regenerate'
+              : 'Run'}
         </Button>
       </div>
 

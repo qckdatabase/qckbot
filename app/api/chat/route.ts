@@ -1,10 +1,27 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { requireTenant } from '@/lib/auth/api'
 import { getDb } from '@/lib/auth/db'
 import { chatWithContext, detectCampaignIntent } from '@/lib/openai'
 import { generateCounterCampaign, editCampaignContent } from '@/lib/ai-campaign'
 import { getInternalLinkPool, getLiveKeywords } from '@/lib/sitemap'
+import {
+  MONTHLY_CAP_MESSAGE,
+  countCampaignsInMonth,
+  getMonthBounds,
+  MONTHLY_CAMPAIGN_CAP,
+} from '@/lib/campaign-cap'
+import { getLatestSeoSnapshot, matchKeywordMetric } from '@/lib/keyword-metrics'
+import { pickNextAvailableDate } from '@/lib/campaign-schedule'
+import { runMonthPlan } from '@/lib/plan-month-flow'
+import {
+  generateCampaignDraft,
+  runWithConcurrency,
+} from '@/lib/generate-campaign-flow'
 
-export const maxDuration = 180
+export const maxDuration = 300
+
+const PLAN_NEXT_MONTH_CMD = '/plan-next-month'
+const GENERATION_CONCURRENCY = 5
 
 interface TenantRow {
   domain: string | null
@@ -49,9 +66,77 @@ export async function GET() {
     .from('chat_messages')
     .select('*')
     .eq('tenant_id', auth.tenantId)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: true }) as {
+      data: Array<{
+        id: string
+        role: string
+        content: string
+        action_type: string | null
+        action_meta: { campaign_id?: string } | null
+        created_at: string
+      }> | null
+    }
 
-  return Response.json({ messages: messages || [] })
+  const list = messages || []
+  const referencedIds = Array.from(
+    new Set(
+      list
+        .map((m) => m.action_meta?.campaign_id)
+        .filter((id): id is string => typeof id === 'string' && id.length > 0)
+    )
+  )
+
+  let existingIds = new Set<string>()
+  if (referencedIds.length > 0) {
+    const { data: existing } = await db
+      .from('campaigns')
+      .select('id')
+      .eq('tenant_id', auth.tenantId)
+      .in('id', referencedIds) as { data: Array<{ id: string }> | null }
+    existingIds = new Set((existing || []).map((c) => c.id))
+  }
+
+  const enriched = list.map((m) => {
+    const cid = m.action_meta?.campaign_id
+    if (!cid) return m
+    const deleted = !existingIds.has(cid)
+    return {
+      ...m,
+      action_meta: { ...m.action_meta, campaign_id: cid, deleted },
+    }
+  })
+
+  const BATCH_WINDOW_MS = 15 * 60 * 1000
+  const batchSince = new Date(Date.now() - BATCH_WINDOW_MS).toISOString()
+
+  const { data: recentBatch } = await db
+    .from('campaigns')
+    .select('status')
+    .eq('tenant_id', auth.tenantId)
+    .gte('created_at', batchSince) as {
+      data: Array<{ status: string }> | null
+    }
+
+  const batch = recentBatch || []
+  const inFlightStatuses = new Set(['pending', 'generating'])
+  const total = batch.length
+  const inFlight = batch.filter((c) => inFlightStatuses.has(c.status)).length
+  const done = total - inFlight
+
+  const lastMsg = list[list.length - 1]
+  const STALE_MS = 10 * 60 * 1000
+  const lastIsUserPending =
+    lastMsg?.role === 'user' &&
+    Date.now() - new Date(lastMsg.created_at).getTime() < STALE_MS
+
+  const isGenerating = inFlight > 0 || lastIsUserPending
+  const progress = total > 1 && inFlight > 0 ? { done, total } : null
+
+  return Response.json({
+    messages: enriched,
+    is_generating: isGenerating,
+    progress,
+  })
 }
 
 export async function POST(request: Request) {
@@ -71,6 +156,10 @@ export async function POST(request: Request) {
     role: 'user',
     content,
   })
+
+  if (content.trim().toLowerCase().startsWith(PLAN_NEXT_MONTH_CMD)) {
+    return handlePlanNextMonth(db, auth.tenantId)
+  }
 
   const { data: tenant } = await db
     .from('tenants')
@@ -223,6 +312,19 @@ export async function POST(request: Request) {
     const intent = await detectCampaignIntent(content, context, tenant?.brand_voice)
 
     if (intent.type === 'campaign') {
+      const scheduledFor = await pickNextAvailableDate(db, auth.tenantId)
+      const targetBounds = getMonthBounds(new Date(`${scheduledFor}T00:00:00Z`))
+      const monthTotal = await countCampaignsInMonth(db, auth.tenantId, targetBounds)
+      if (monthTotal >= MONTHLY_CAMPAIGN_CAP) {
+        assistantReply = MONTHLY_CAP_MESSAGE
+        await db.from('chat_messages').insert({
+          tenant_id: auth.tenantId,
+          role: 'assistant',
+          content: assistantReply,
+        })
+        return Response.json({ response: assistantReply, campaign_id: null })
+      }
+
       const matchingTemplate =
         (guardrailTemplates || []).find(
           (t) => t.content_type === intent.content_type && t.field_name === 'structure'
@@ -263,6 +365,9 @@ export async function POST(request: Request) {
         internalLinks,
       })
 
+      const snapshot = await getLatestSeoSnapshot(db, auth.tenantId)
+      const metric = matchKeywordMetric(intent.primary_keyword, snapshot)
+
       const { data: insertedCampaign, error: insertErr } = await db
         .from('campaigns')
         .insert({
@@ -272,6 +377,9 @@ export async function POST(request: Request) {
           primary_keyword: intent.primary_keyword,
           generated_content: counter.content,
           status: 'generated',
+          scheduled_for: scheduledFor,
+          keyword_difficulty: metric.kd,
+          keyword_volume: metric.volume,
         })
         .select()
         .single() as {
@@ -289,8 +397,15 @@ export async function POST(request: Request) {
         internalLinks.products.length === 0 &&
         internalLinks.collections.length === 0 &&
         internalLinks.blogs.length === 0
+      const scheduleDate = new Date(`${scheduledFor}T00:00:00Z`).toLocaleDateString(undefined, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
       assistantReply =
         `Counter campaign created: **${intent.title}** (${intent.content_type}, keyword: ${intent.primary_keyword}).\n\n` +
+        `Scheduled for **${scheduleDate}** (next free weekday slot).\n\n` +
         (ref
           ? `Countering competitor: **${ref.domain}** — "${ref.title}" (${ref.url}).\n\n`
           : '') +
@@ -400,4 +515,103 @@ export async function POST(request: Request) {
     response: assistantReply,
     campaign_id: campaignId,
   })
+}
+
+async function handlePlanNextMonth(db: SupabaseClient, tenantId: string): Promise<Response> {
+  const planResult = await runMonthPlan(db, { tenantId })
+  if (!planResult.ok) {
+    const reply =
+      planResult.code === 'cap_reached'
+        ? MONTHLY_CAP_MESSAGE
+        : `Could not plan next month: ${planResult.error}`
+    await db.from('chat_messages').insert({
+      tenant_id: tenantId,
+      role: 'assistant',
+      content: reply,
+    })
+    return Response.json({ response: reply, campaign_id: null }, { status: planResult.status })
+  }
+
+  const inserted = planResult.campaigns
+  if (inserted.length === 0) {
+    const reply = 'No new campaigns were planned (all weekday slots already taken).'
+    await db.from('chat_messages').insert({
+      tenant_id: tenantId,
+      role: 'assistant',
+      content: reply,
+    })
+    return Response.json({ response: reply, campaign_id: null })
+  }
+
+  const { data: tenantRow } = await db
+    .from('tenants')
+    .select('domain, ahrefs_target, brand_voice, competitor_domains, sitemap_url')
+    .eq('id', tenantId)
+    .single() as {
+      data: {
+        domain: string | null
+        ahrefs_target: string | null
+        brand_voice: string | null
+        competitor_domains: string[] | null
+        sitemap_url: string | null
+      } | null
+    }
+
+  const domain = tenantRow?.domain || tenantRow?.ahrefs_target || ''
+  const internalLinks = await getInternalLinkPool(tenantRow?.sitemap_url)
+
+  const { data: structureTemplates } = await db
+    .from('guardrail_templates')
+    .select('content_type, template_content')
+    .eq('field_name', 'structure') as {
+      data: Array<{ content_type: string; template_content: string }> | null
+    }
+
+  const templateMap = new Map<string, string>()
+  for (const t of structureTemplates || []) {
+    templateMap.set(t.content_type, t.template_content)
+  }
+
+  const generationResults = await runWithConcurrency(
+    inserted,
+    GENERATION_CONCURRENCY,
+    async (row) =>
+      generateCampaignDraft({
+        db,
+        tenantId,
+        campaign: {
+          id: row.id,
+          title: row.title,
+          content_type: row.content_type,
+          primary_keyword: row.primary_keyword,
+        },
+        tenant: {
+          domain,
+          brand_voice: tenantRow?.brand_voice || null,
+          competitor_domains: tenantRow?.competitor_domains || [],
+        },
+        internalLinks,
+        structureTemplate: templateMap.get(row.content_type) || '',
+      })
+  )
+
+  const succeeded = generationResults.filter((r) => r.ok).length
+  const failed = generationResults.length - succeeded
+  const monthLabel = new Date(
+    Date.UTC(planResult.year, planResult.month - 1, 1)
+  ).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+
+  const reply =
+    `Planned ${inserted.length} campaigns for **${monthLabel}** and auto-generated drafts.\n\n` +
+    `Drafts ready: **${succeeded}** / ${inserted.length}.` +
+    (failed > 0 ? ` ${failed} failed — retry from the Campaigns page.` : '') +
+    `\n\nView all drafts on the Campaigns page.`
+
+  await db.from('chat_messages').insert({
+    tenant_id: tenantId,
+    role: 'assistant',
+    content: reply,
+  })
+
+  return Response.json({ response: reply, campaign_id: null })
 }

@@ -8,7 +8,7 @@ import {
   SendIcon,
   LoaderIcon,
   XIcon,
-  Sparkles,
+  CalendarPlus,
   Search,
   Target,
   TrendingUp,
@@ -22,7 +22,7 @@ interface ChatMessage {
   content: string
   created_at?: string
   action_type?: string | null
-  action_meta?: { campaign_id?: string } | null
+  action_meta?: { campaign_id?: string; deleted?: boolean } | null
 }
 
 interface CommandSuggestion {
@@ -35,7 +35,7 @@ interface CommandSuggestion {
 const COMMAND_SUGGESTIONS: CommandSuggestion[] = [
   { icon: <TrendingUp size={14} />, label: 'Top keywords', description: 'List top performing keywords', prefix: '/keywords' },
   { icon: <Target size={14} />, label: 'Competitors', description: 'Show competitor overview', prefix: '/competitors' },
-  { icon: <Sparkles size={14} />, label: 'Campaign', description: 'Generate a content campaign', prefix: '/campaign' },
+  { icon: <CalendarPlus size={14} />, label: 'Plan next month', description: 'Plan + auto-generate 20 drafts for next month', prefix: '/plan-next-month' },
   { icon: <Search size={14} />, label: 'Audit', description: 'Run an SEO audit', prefix: '/audit' },
 ]
 
@@ -44,6 +44,8 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [serverGenerating, setServerGenerating] = useState(false)
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
   const [error, setError] = useState('')
   const [attachments, setAttachments] = useState<string[]>([])
   const [showPalette, setShowPalette] = useState(false)
@@ -72,6 +74,14 @@ export default function ChatPage() {
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Failed to load chat history')
       setMessages(json.messages || [])
+      setServerGenerating(!!json.is_generating)
+      setProgress(
+        json.progress &&
+          typeof json.progress.done === 'number' &&
+          typeof json.progress.total === 'number'
+          ? { done: json.progress.done, total: json.progress.total }
+          : null
+      )
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load chat history')
     } finally {
@@ -82,6 +92,14 @@ export default function ChatPage() {
   useEffect(() => {
     loadHistory()
   }, [loadHistory])
+
+  useEffect(() => {
+    if (!serverGenerating) return
+    const id = setInterval(() => {
+      loadHistory()
+    }, 4000)
+    return () => clearInterval(id)
+  }, [serverGenerating, loadHistory])
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
@@ -217,20 +235,28 @@ export default function ChatPage() {
               {m.content}
               {m.action_meta?.campaign_id && (
                 <div style={{ marginTop: 8 }}>
-                  <Link href={`/campaigns/${m.action_meta.campaign_id}`}>
-                    <Button size="sm" variant="secondary">Open Campaign</Button>
-                  </Link>
+                  {m.action_meta.deleted ? (
+                    <Button size="sm" variant="secondary" disabled>
+                      Campaign deleted
+                    </Button>
+                  ) : (
+                    <Link href={`/campaigns/${m.action_meta.campaign_id}`}>
+                      <Button size="sm" variant="secondary">Open Campaign</Button>
+                    </Link>
+                  )}
                 </div>
               )}
             </div>
           </div>
         ))}
 
-        {sending && (
+        {(sending || serverGenerating) && (
           <div className={`${styles.message} ${styles.assistant}`}>
             <div className={styles.avatar}>AI</div>
             <div className={styles.content}>
-              <span className={styles.typing}>Thinking</span>
+              <span className={styles.typing}>
+                {progress ? `Generating ${progress.done}/${progress.total}` : 'Thinking'}
+              </span>
               <span className={styles.typingDots}>
                 <span /><span /><span />
               </span>

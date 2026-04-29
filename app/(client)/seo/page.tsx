@@ -12,6 +12,7 @@ import { Card } from '@/components/ui/card'
 import { Table } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Pagination, paginate } from '@/components/ui/pagination'
+import { useRefreshStatus } from '@/lib/use-refresh-status'
 import styles from './page.module.css'
 
 const PAGE_SIZE = 10
@@ -65,6 +66,7 @@ export default function SEOPage() {
   const [error, setError] = useState('')
   const [keywordsPage, setKeywordsPage] = useState(1)
   const [backlinksPage, setBacklinksPage] = useState(1)
+  const { status: refreshStatus, refetch: refetchRefreshStatus } = useRefreshStatus()
 
   const loadCached = useCallback(async () => {
     setError('')
@@ -89,6 +91,12 @@ export default function SEOPage() {
     loadCached().finally(() => setLoading(false))
   }, [loadCached])
 
+  useEffect(() => {
+    if (!refreshStatus.refresh_in_flight) {
+      loadCached()
+    }
+  }, [refreshStatus.refresh_in_flight, loadCached])
+
   const handleRefresh = async () => {
     setRefreshing(true)
     setError('')
@@ -104,6 +112,7 @@ export default function SEOPage() {
       setError('Failed to connect to server')
     } finally {
       setRefreshing(false)
+      refetchRefreshStatus()
     }
   }
 
@@ -133,8 +142,14 @@ export default function SEOPage() {
       <div className={styles.page}>
         <div className={styles.headerRow}>
           <h1>SEO Metrics</h1>
-          <Button variant="secondary" size="sm" onClick={handleRefresh} loading={refreshing}>
-            Fetch from Ahrefs
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleRefresh}
+            loading={refreshing || refreshStatus.refresh_in_flight}
+            disabled={refreshStatus.refresh_in_flight}
+          >
+            {refreshStatus.refresh_in_flight ? 'Refreshing...' : 'Fetch from Ahrefs'}
           </Button>
         </div>
         <p className={styles.loading}>No cached SEO data yet. Click &ldquo;Fetch from Ahrefs&rdquo; to load.</p>
@@ -167,9 +182,15 @@ export default function SEOPage() {
             Latest snapshot pulled from Ahrefs — domain authority, organic keyword footprint, and backlink profile.
           </p>
         </div>
-        <Button variant="secondary" size="sm" onClick={handleRefresh} loading={refreshing}>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={handleRefresh}
+          loading={refreshing || refreshStatus.refresh_in_flight}
+          disabled={refreshStatus.refresh_in_flight}
+        >
           <RefreshCw size={14} />
-          Refresh
+          {refreshStatus.refresh_in_flight ? 'Refreshing...' : 'Refresh'}
         </Button>
       </div>
 

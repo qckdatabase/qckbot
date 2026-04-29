@@ -18,6 +18,9 @@ CREATE TABLE tenants (
   slack_channel_id TEXT,
   competitor_domains TEXT[] DEFAULT '{}',
   status TEXT DEFAULT 'active' CHECK (status IN ('active', 'deactivated')),
+  refresh_in_flight BOOLEAN NOT NULL DEFAULT FALSE,
+  last_refreshed_at TIMESTAMPTZ,
+  initial_refresh_done BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -73,6 +76,8 @@ CREATE TABLE campaigns (
   google_doc_url TEXT,
   live_url TEXT,
   generated_content TEXT,
+  keyword_difficulty INTEGER,
+  keyword_volume INTEGER,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

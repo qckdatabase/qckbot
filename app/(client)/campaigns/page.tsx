@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { CalendarPlus, Sparkles, Info, Trash2 } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import { Sparkles, Info, Trash2, ExternalLink } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import styles from './page.module.css'
 
@@ -17,6 +17,10 @@ interface Campaign {
   status: string
   created_at: string
   scheduled_for: string | null
+  google_doc_url: string | null
+  live_url: string | null
+  keyword_difficulty: number | null
+  keyword_volume: number | null
 }
 
 function statusVariant(status: string): 'success' | 'warning' | 'default' | 'error' {
@@ -26,7 +30,7 @@ function statusVariant(status: string): 'success' | 'warning' | 'default' | 'err
   return 'default'
 }
 
-async function safeJson(res: Response): Promise<{ error?: string; success?: boolean }> {
+async function safeJson(res: Response): Promise<{ error?: string; success?: boolean; cap_reached?: boolean }> {
   const text = await res.text()
   try {
     return JSON.parse(text)
@@ -35,7 +39,7 @@ async function safeJson(res: Response): Promise<{ error?: string; success?: bool
   }
 }
 
-function formatDate(iso: string): string {
+function formatScheduledDate(iso: string): string {
   const d = new Date(iso + 'T00:00:00Z')
   return d.toLocaleDateString(undefined, {
     weekday: 'short',
@@ -44,20 +48,24 @@ function formatDate(iso: string): string {
   })
 }
 
-function weekKey(iso: string): string {
-  const d = new Date(iso + 'T00:00:00Z')
-  const day = d.getUTCDay()
-  const diffToMon = day === 0 ? -6 : 1 - day
-  const monday = new Date(d)
-  monday.setUTCDate(d.getUTCDate() + diffToMon)
-  return monday.toISOString().slice(0, 10)
+function formatCreatedDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+function formatNumber(n: number | null | undefined): string {
+  if (n === null || n === undefined) return '—'
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`
+  return String(n)
 }
 
 export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [planning, setPlanning] = useState(false)
   const [generatingId, setGeneratingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deletingMonth, setDeletingMonth] = useState(false)
@@ -105,21 +113,6 @@ export default function CampaignsPage() {
     load()
   }, [load])
 
-  async function handlePlanMonth() {
-    setPlanning(true)
-    setError('')
-    try {
-      const res = await fetch('/api/campaigns/plan-month', { method: 'POST' })
-      const json = await safeJson(res)
-      if (!res.ok) throw new Error(json.error || 'Plan failed')
-      await load()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Plan failed')
-    } finally {
-      setPlanning(false)
-    }
-  }
-
   function askDelete(id: string, title: string) {
     setConfirmState({
       open: true,
@@ -139,42 +132,6 @@ export default function CampaignsPage() {
           setError(err instanceof Error ? err.message : 'Delete failed')
         } finally {
           setDeletingId(null)
-        }
-      },
-    })
-  }
-
-  function askDeleteWeek(weekKeyIso: string) {
-    const weekCampaigns = campaigns.filter(
-      (c) => c.scheduled_for && weekKey(c.scheduled_for) === weekKeyIso
-    )
-    const ids = weekCampaigns.map((c) => c.id)
-    if (ids.length === 0) return
-    const weekLabel = formatDate(weekKeyIso)
-    setConfirmState({
-      open: true,
-      title: 'Clear this week?',
-      message: `All ${ids.length} campaigns in the week of ${weekLabel} will be permanently removed. This cannot be undone.`,
-      confirmLabel: `Delete ${ids.length}`,
-      variant: 'danger',
-      action: async () => {
-        setDeletingMonth(true)
-        setError('')
-        try {
-          const results = await Promise.allSettled(
-            ids.map((id) => fetch(`/api/campaigns/${id}`, { method: 'DELETE' }))
-          )
-          const failed = results.filter(
-            (r) => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok)
-          ).length
-          if (failed > 0) {
-            setError(`${failed} of ${ids.length} deletions failed`)
-          }
-          await load()
-        } catch (err) {
-          setError(err instanceof Error ? err.message : 'Bulk delete failed')
-        } finally {
-          setDeletingMonth(false)
         }
       },
     })
@@ -237,26 +194,134 @@ export default function CampaignsPage() {
     }
   }
 
+  function renderDraftCell(c: Campaign) {
+    if (c.status === 'pending' || c.status === 'failed') {
+      return (
+        <Button
+          size="sm"
+          onClick={() => handleGenerate(c.id)}
+          loading={generatingId === c.id}
+        >
+          <Sparkles size={14} />
+          {c.status === 'failed' ? 'Retry' : 'Generate'}
+        </Button>
+      )
+    }
+    if (c.google_doc_url) {
+      return (
+        <a
+          href={c.google_doc_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.linkCell}
+        >
+          Doc <ExternalLink size={12} />
+        </a>
+      )
+    }
+    return (
+      <Link href={`/campaigns/${c.id}`} className={styles.linkCell}>
+        Open
+      </Link>
+    )
+  }
+
+  function renderLiveCell(c: Campaign) {
+    if (!c.live_url) return <span className={styles.muted}>—</span>
+    return (
+      <a
+        href={c.live_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.linkCell}
+      >
+        Live <ExternalLink size={12} />
+      </a>
+    )
+  }
+
+  function renderRow(c: Campaign, dateLabel: string) {
+    return (
+      <tr key={c.id} className={styles.tableRow}>
+        <td className={styles.tableCell}>
+          <span className={styles.dateText}>{dateLabel}</span>
+        </td>
+        <td className={styles.tableCell}>
+          <span className={styles.typeText}>{c.content_type.replace(/_/g, ' ')}</span>
+        </td>
+        <td className={`${styles.tableCell} ${styles.titleCell}`}>
+          <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
+          <span className={styles.titleText}>{c.title}</span>
+        </td>
+        <td className={styles.tableCell}>{c.primary_keyword}</td>
+        <td className={`${styles.tableCell} ${styles.numCell}`}>
+          {c.keyword_difficulty != null ? (
+            formatNumber(c.keyword_difficulty)
+          ) : (
+            <span className={styles.muted}>—</span>
+          )}
+        </td>
+        <td className={`${styles.tableCell} ${styles.numCell}`}>
+          {c.keyword_volume != null ? (
+            formatNumber(c.keyword_volume)
+          ) : (
+            <span className={styles.muted}>—</span>
+          )}
+        </td>
+        <td className={styles.tableCell}>{renderDraftCell(c)}</td>
+        <td className={styles.tableCell}>{renderLiveCell(c)}</td>
+        <td className={`${styles.tableCell} ${styles.actionCell}`}>
+          <button
+            type="button"
+            className={styles.rowDeleteBtn}
+            onClick={() => askDelete(c.id, c.title)}
+            disabled={deletingId === c.id}
+            aria-label="Delete campaign"
+            title="Delete campaign"
+          >
+            <Trash2 size={14} />
+          </button>
+        </td>
+      </tr>
+    )
+  }
+
+  function renderTable(rows: Campaign[], dateFor: (c: Campaign) => string) {
+    return (
+      <table className={styles.campaignTable}>
+        <thead>
+          <tr>
+            <th className={styles.tableHead}>Date</th>
+            <th className={styles.tableHead}>Content Type</th>
+            <th className={styles.tableHead}>Title</th>
+            <th className={styles.tableHead}>Keyword</th>
+            <th className={`${styles.tableHead} ${styles.numCell}`}>KD</th>
+            <th className={`${styles.tableHead} ${styles.numCell}`}>Volume</th>
+            <th className={styles.tableHead}>Draft Link</th>
+            <th className={styles.tableHead}>Live Link</th>
+            <th className={`${styles.tableHead} ${styles.actionCell}`} aria-label="Actions" />
+          </tr>
+        </thead>
+        <tbody>{rows.map((c) => renderRow(c, dateFor(c)))}</tbody>
+      </table>
+    )
+  }
+
   const scheduled = campaigns.filter((c) => c.scheduled_for)
   const adhoc = campaigns.filter((c) => !c.scheduled_for)
 
-  const byMonth = new Map<string, { year: number; month: number; weeks: Map<string, Campaign[]> }>()
+  const byMonth = new Map<string, { year: number; month: number; items: Campaign[] }>()
   for (const c of scheduled) {
     if (!c.scheduled_for) continue
     const d = new Date(c.scheduled_for + 'T00:00:00Z')
     const y = d.getUTCFullYear()
     const m = d.getUTCMonth() + 1
     const monthKey = `${y}-${String(m).padStart(2, '0')}`
-    if (!byMonth.has(monthKey)) byMonth.set(monthKey, { year: y, month: m, weeks: new Map() })
-    const monthEntry = byMonth.get(monthKey)!
-    const wk = weekKey(c.scheduled_for)
-    if (!monthEntry.weeks.has(wk)) monthEntry.weeks.set(wk, [])
-    monthEntry.weeks.get(wk)!.push(c)
+    if (!byMonth.has(monthKey)) byMonth.set(monthKey, { year: y, month: m, items: [] })
+    byMonth.get(monthKey)!.items.push(c)
   }
-  for (const monthEntry of byMonth.values()) {
-    for (const list of monthEntry.weeks.values()) {
-      list.sort((a, b) => (a.scheduled_for || '').localeCompare(b.scheduled_for || ''))
-    }
+  for (const entry of byMonth.values()) {
+    entry.items.sort((a, b) => (a.scheduled_for || '').localeCompare(b.scheduled_for || ''))
   }
   const monthKeys = Array.from(byMonth.keys()).sort()
 
@@ -266,13 +331,10 @@ export default function CampaignsPage() {
         <div>
           <h1>Campaigns</h1>
           <p className={styles.subtitle}>
-            Plan an entire month at once (5 contents/week, Mon–Fri) or chat with the bot for one-offs.
+            Use <Link href="/chat" className={styles.noteLink}>chat</Link> with{' '}
+            <code>/plan-next-month</code> to plan + auto-generate 20 drafts, or chat one-offs. Hard cap: 20 contents per calendar month — exceeding it risks Google flagging the domain.
           </p>
         </div>
-        <Button onClick={handlePlanMonth} loading={planning}>
-          <CalendarPlus size={16} />
-          Plan Next Month
-        </Button>
       </div>
 
       <div className={styles.note}>
@@ -281,10 +343,7 @@ export default function CampaignsPage() {
           Cannibalization guard reads four sources before suggesting keywords:
           existing drafts, live blog slugs, live product slugs, and the latest{' '}
           <Link href="/keywords" className={styles.noteLink}>Keyword Tracker</Link> snapshot.
-          Drafts and sitemap data are pulled live each run; the tracker snapshot
-          refreshes weekly via cron. If you published new content recently,
-          click <strong>Regenerate</strong> on the Keyword Tracker page before
-          planning to avoid duplicate keywords.
+          KD and Volume are matched from the latest SEO snapshot — &mdash; means no match yet.
         </span>
       </div>
 
@@ -295,28 +354,28 @@ export default function CampaignsPage() {
         <Card>
           <div className={styles.empty}>
             <p>No campaigns yet.</p>
-            <p>Click &ldquo;Plan Next Month&rdquo; to generate a 20-content calendar, or chat with the bot for one-offs.</p>
+            <p>Click &ldquo;Plan Next Month&rdquo; to generate up to 20 contents, or chat with the bot for one-offs.</p>
           </div>
         </Card>
       )}
 
       {monthKeys.map((monthKey) => {
-        const monthEntry = byMonth.get(monthKey)!
-        const monthLabel = new Date(Date.UTC(monthEntry.year, monthEntry.month - 1, 1)).toLocaleDateString(undefined, {
+        const entry = byMonth.get(monthKey)!
+        const monthLabel = new Date(Date.UTC(entry.year, entry.month - 1, 1)).toLocaleDateString(undefined, {
           month: 'long',
           year: 'numeric',
         })
-        const weekKeys = Array.from(monthEntry.weeks.keys()).sort()
-        const monthCount = Array.from(monthEntry.weeks.values()).reduce((s, l) => s + l.length, 0)
         return (
           <section key={monthKey} className={styles.monthSection}>
             <h2 className={styles.monthHeader}>
               <span className={styles.monthLabel}>{monthLabel}</span>
-              <span className={styles.weekCount}>{monthCount} contents</span>
+              <span className={styles.itemCount}>
+                {entry.items.length} / 20 contents
+              </span>
               <button
                 type="button"
-                className={styles.weekDeleteBtn}
-                onClick={() => askDeleteMonth(monthEntry.year, monthEntry.month)}
+                className={styles.monthClearBtn}
+                onClick={() => askDeleteMonth(entry.year, entry.month)}
                 disabled={deletingMonth}
                 title={`Delete all campaigns in ${monthLabel}`}
               >
@@ -324,102 +383,23 @@ export default function CampaignsPage() {
                 {deletingMonth ? 'Deleting...' : 'Clear month'}
               </button>
             </h2>
-            {weekKeys.map((wk) => (
-        <section key={`${monthKey}-${wk}`} className={styles.weekSection}>
-          <h3 className={styles.weekHeader}>
-            Week of {formatDate(wk)}
-            <span className={styles.weekCount}>{monthEntry.weeks.get(wk)!.length} contents</span>
-            <button
-              type="button"
-              className={styles.weekDeleteBtn}
-              onClick={() => askDeleteWeek(wk)}
-              disabled={deletingMonth}
-              title="Delete all campaigns in this week"
-            >
-              <Trash2 size={12} />
-              Clear week
-            </button>
-          </h3>
-          <div className={styles.weekGrid}>
-            {monthEntry.weeks.get(wk)!.map((c) => (
-              <Card key={c.id} className={styles.scheduleCard}>
-                <div className={styles.scheduleHeader}>
-                  <span className={styles.scheduleDate}>
-                    {c.scheduled_for ? formatDate(c.scheduled_for) : ''}
-                  </span>
-                  <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
-                </div>
-                <h3 className={styles.scheduleTitle}>{c.title}</h3>
-                <div className={styles.keyword}>{c.primary_keyword}</div>
-                <div className={styles.type}>{c.content_type.replace(/_/g, ' ')}</div>
-                <div className={styles.scheduleActions}>
-                  {c.status === 'pending' || c.status === 'failed' ? (
-                    <Button
-                      size="sm"
-                      onClick={() => handleGenerate(c.id)}
-                      loading={generatingId === c.id}
-                    >
-                      <Sparkles size={14} />
-                      {c.status === 'failed' ? 'Retry' : 'Generate'}
-                    </Button>
-                  ) : (
-                    <Link href={`/campaigns/${c.id}`}>
-                      <Button size="sm" variant="secondary">
-                        Open Draft
-                      </Button>
-                    </Link>
-                  )}
-                  <button
-                    type="button"
-                    className={styles.deleteBtn}
-                    onClick={() => askDelete(c.id, c.title)}
-                    disabled={deletingId === c.id}
-                    aria-label="Delete campaign"
-                    title="Delete campaign"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </section>
-            ))}
+            <div className={styles.tableWrap}>
+              {renderTable(entry.items, (c) =>
+                c.scheduled_for ? formatScheduledDate(c.scheduled_for) : '—'
+              )}
+            </div>
           </section>
         )
       })}
 
       {adhoc.length > 0 && (
         <section className={styles.adhocSection}>
-          <h2 className={styles.weekHeader}>Ad-hoc</h2>
-          <div className={styles.grid}>
-            {adhoc.map((c) => (
-              <div key={c.id} className={styles.adhocItem}>
-                <Link href={`/campaigns/${c.id}`} className={styles.adhocLink}>
-                  <Card className={styles.card}>
-                    <div className={styles.cardHeader}>
-                      <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
-                      <span className={styles.date}>
-                        {new Date(c.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <h3>{c.title}</h3>
-                    <div className={styles.keyword}>{c.primary_keyword}</div>
-                    <div className={styles.type}>{c.content_type.replace(/_/g, ' ')}</div>
-                  </Card>
-                </Link>
-                <button
-                  type="button"
-                  className={styles.adhocDeleteBtn}
-                  onClick={() => askDelete(c.id, c.title)}
-                  disabled={deletingId === c.id}
-                  aria-label="Delete campaign"
-                  title="Delete campaign"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ))}
+          <h2 className={styles.monthHeader}>
+            <span className={styles.monthLabel}>Ad-hoc</span>
+            <span className={styles.itemCount}>{adhoc.length} contents</span>
+          </h2>
+          <div className={styles.tableWrap}>
+            {renderTable(adhoc, (c) => formatCreatedDate(c.created_at))}
           </div>
         </section>
       )}

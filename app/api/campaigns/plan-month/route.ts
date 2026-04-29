@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireTenant } from '@/lib/auth/api'
 import { getDb } from '@/lib/auth/db'
-import { planMonth, weekdaysInMonth } from '@/lib/ai-month-plan'
-import { getLiveKeywords } from '@/lib/sitemap'
+import { runMonthPlan } from '@/lib/plan-month-flow'
 
 export const maxDuration = 90
 
@@ -17,122 +16,32 @@ export async function POST(request: Request) {
   if (!auth.ok) return auth.response
 
   const body = (await request.json().catch(() => ({}))) as PlanRequestBody
-  const today = new Date()
-  let year = body.year ?? today.getUTCFullYear()
-  let month = body.month ?? today.getUTCMonth() + 2 // default = next month
-  if (month > 12) {
-    month -= 12
-    year += 1
-  }
-
-  const dates = weekdaysInMonth(year, month).slice(0, 20) // 5/wk × 4 wk
-  if (dates.length === 0) {
-    return NextResponse.json({ error: 'No weekdays in target month' }, { status: 400 })
-  }
-  const count = Math.min(body.count ?? 20, dates.length)
-
   const db = getDb()
 
-  const { data: tenant } = await db
-    .from('tenants')
-    .select('domain, brand_voice, sitemap_url')
-    .eq('id', auth.tenantId)
-    .single() as {
-      data: { domain: string | null; brand_voice: string | null; sitemap_url: string | null } | null
-    }
+  const result = await runMonthPlan(db, {
+    tenantId: auth.tenantId,
+    year: body.year,
+    month: body.month,
+    count: body.count,
+  })
 
-  if (!tenant?.domain) {
-    return NextResponse.json({ error: 'Tenant domain not configured' }, { status: 400 })
-  }
-
-  const monthStart = `${year}-${String(month).padStart(2, '0')}-01`
-  const nextMonthNum = month === 12 ? 1 : month + 1
-  const nextMonthYear = month === 12 ? year + 1 : year
-  const monthEnd = `${nextMonthYear}-${String(nextMonthNum).padStart(2, '0')}-01`
-
-  const { data: existingInMonth } = await db
-    .from('campaigns')
-    .select('id')
-    .eq('tenant_id', auth.tenantId)
-    .gte('scheduled_for', monthStart)
-    .lt('scheduled_for', monthEnd) as {
-      data: Array<{ id: string }> | null
-    }
-
-  if ((existingInMonth?.length ?? 0) > 0) {
+  if (!result.ok) {
     return NextResponse.json(
       {
-        error: `${year}-${String(month).padStart(2, '0')} already has ${existingInMonth!.length} campaign(s) scheduled. Delete them before re-planning this month.`,
-        already_planned: true,
-        existing_count: existingInMonth!.length,
-        year,
-        month,
+        error: result.error,
+        ...(result.code === 'cap_reached' ? { cap_reached: true } : {}),
+        ...(result.code === 'all_slots_taken' ? { all_slots_taken: true } : {}),
+        year: result.year,
+        month: result.month,
       },
-      { status: 409 }
+      { status: result.status }
     )
   }
 
-  const { data: existing } = await db
-    .from('campaigns')
-    .select('primary_keyword')
-    .eq('tenant_id', auth.tenantId) as {
-      data: Array<{ primary_keyword: string | null }> | null
-    }
-
-  const takenKeywords = (existing || [])
-    .map((c) => (c.primary_keyword || '').trim().toLowerCase())
-    .filter(Boolean)
-
-  const liveKeywords = await getLiveKeywords(tenant.sitemap_url)
-
-  const { data: trackedRow } = await db
-    .from('store_keywords')
-    .select('payload')
-    .eq('tenant_id', auth.tenantId)
-    .order('generated_at', { ascending: false })
-    .limit(1)
-    .maybeSingle() as {
-      data: { payload: { keywords?: Array<{ keyword: string }> } | null } | null
-    }
-
-  const trackedKeywords = (trackedRow?.payload?.keywords || [])
-    .map((k) => (k.keyword || '').trim().toLowerCase())
-    .filter(Boolean)
-
-  let items
-  try {
-    items = await planMonth({
-      domain: tenant.domain,
-      brandVoice: tenant.brand_voice,
-      takenKeywords,
-      liveBlogKeywords: liveKeywords.blogs,
-      liveProductKeywords: liveKeywords.products,
-      trackedKeywords,
-      count,
-    })
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Planning failed'
-    return NextResponse.json({ error: message }, { status: 500 })
-  }
-
-  const rows = items.slice(0, dates.length).map((item, i) => ({
-    tenant_id: auth.tenantId,
-    title: item.title,
-    content_type: item.content_type,
-    primary_keyword: item.primary_keyword,
-    status: 'pending' as const,
-    scheduled_for: dates[i].toISOString().slice(0, 10),
-  }))
-
-  const { data: inserted, error } = await db.from('campaigns').insert(rows).select()
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
   return NextResponse.json({
-    year,
-    month,
-    count: rows.length,
-    campaigns: inserted || [],
+    year: result.year,
+    month: result.month,
+    count: result.campaigns.length,
+    campaigns: result.campaigns,
   })
 }

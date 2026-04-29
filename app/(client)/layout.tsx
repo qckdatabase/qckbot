@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth/session'
 import { getDb } from '@/lib/auth/db'
 import { Sidebar } from '@/components/ui/sidebar'
+import { RefreshBoot } from '@/components/refresh-boot'
 import styles from './layout.module.css'
 
 export default async function ClientLayout({
@@ -38,6 +39,7 @@ export default async function ClientLayout({
     <div className={styles.layout}>
       <Sidebar tenantName={tenantName} />
       <main className={styles.main}>{children}</main>
+      <RefreshBoot />
     </div>
   )
 }
