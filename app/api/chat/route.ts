@@ -136,6 +136,20 @@ export async function POST(request: Request) {
       } | null
     }
 
+  const { data: trackedKeywordsRow } = await db
+    .from('store_keywords')
+    .select('payload')
+    .eq('tenant_id', auth.tenantId)
+    .order('generated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle() as {
+      data: { payload: { keywords?: Array<{ keyword: string }> } | null } | null
+    }
+
+  const trackedKeywords = (trackedKeywordsRow?.payload?.keywords || [])
+    .map((k) => (k.keyword || '').trim().toLowerCase())
+    .filter(Boolean)
+
   const { data: seoSnapshot } = await db
     .from('seo_metrics')
     .select('payload')
@@ -199,6 +213,7 @@ export async function POST(request: Request) {
         }
       : null,
     top_keywords: seoSnapshot?.payload?.keywords || [],
+    tracked_keywords: trackedKeywords,
   }
 
   let assistantReply: string

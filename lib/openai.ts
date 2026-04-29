@@ -60,6 +60,7 @@ interface TenantContext {
     difficulty: number
     url: string
   }>
+  tracked_keywords?: string[]
 }
 
 export function buildRAGContext(context: TenantContext): string {
@@ -204,10 +205,12 @@ export async function detectCampaignIntent(
     if (unique.length === 0) return `  ${label}: (none)`
     return `  ${label}:\n${unique.slice(0, 80).map((k) => `    - "${k}"`).join('\n')}`
   }
+  const trackedKeywords = context.tracked_keywords || []
   const takenKeywordsBlock = [
     fmtList('Already-generated draft keywords (in this app)', generatedKeywords),
     fmtList('Live store blog post slugs (existing published blogs)', liveBlogs),
     fmtList('Live store product slugs (existing products)', liveProducts),
+    fmtList('Tracked store keywords (audited from web search + Ahrefs)', trackedKeywords),
   ].join('\n')
 
   const response = await getOpenAI().chat.completions.create({
@@ -226,10 +229,10 @@ export async function detectCampaignIntent(
           `- title: real ranking-friendly article title targeting the keyword.\n` +
           `If user says "counter the best blog of my competitors", pick the most likely product keyword for ${context.domain}.\n\n` +
           `KEYWORD CANNIBALIZATION GUARD (HARD):\n` +
-          `Pulled from THREE sources — never overlap with any of them:\n` +
+          `Pulled from FOUR sources — never overlap with any of them:\n` +
           `${takenKeywordsBlock}\n` +
           `Rules:\n` +
-          `  - Never reuse an exact taken keyword from ANY of the three lists above.\n` +
+          `  - Never reuse an exact taken keyword from ANY of the four lists above.\n` +
           `  - Never pick a near-duplicate (singular vs plural, word-order swap, synonym) of any taken keyword.\n` +
           `  - Live blog/product slugs reflect what the store ALREADY ranks for — pick a distinct, non-overlapping keyword that targets a separate search intent.\n` +
           `  - If user explicitly requests a topic that maps to a taken keyword, broaden it to a sibling intent (e.g. "waterproof menus" already taken → use "waterproof menu covers" or "outdoor restaurant menus" instead).\n\n` +

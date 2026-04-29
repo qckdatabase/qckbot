@@ -8,6 +8,9 @@ import {
   Trophy,
   FileText,
   MessageSquare,
+  Target,
+  LineChart,
+  Hash,
   LogOut,
   Menu,
   X,
@@ -18,11 +21,24 @@ interface SidebarProps {
   tenantName: string
 }
 
-const navItems = [
-  { href: '/seo', label: 'SEO Metrics', icon: TrendingUp },
-  { href: '/ranking', label: 'AI Ranking', icon: Trophy },
-  { href: '/campaigns', label: 'Campaigns', icon: FileText },
-  { href: '/chat', label: 'Chat', icon: MessageSquare },
+const navGroups = [
+  {
+    label: 'Workspace',
+    items: [
+      { href: '/seo', label: 'SEO Metrics', icon: TrendingUp },
+      { href: '/ranking', label: 'AI Ranking', icon: Trophy },
+      { href: '/competitors', label: 'Organic Competitors', icon: Target },
+      { href: '/campaigns', label: 'Campaigns', icon: FileText },
+      { href: '/chat', label: 'Chat', icon: MessageSquare },
+    ],
+  },
+  {
+    label: 'Tools',
+    items: [
+      { href: '/serp', label: 'SERP Tracker', icon: LineChart },
+      { href: '/keywords', label: 'Keyword Tracker', icon: Hash },
+    ],
+  },
 ]
 
 export function Sidebar({ tenantName }: SidebarProps) {
@@ -100,24 +116,28 @@ export function Sidebar({ tenantName }: SidebarProps) {
           </div>
         </div>
 
-        <div className={styles.navLabel}>Workspace</div>
         <nav className={styles.nav}>
-          {navItems.map((item) => {
-            const Icon = item.icon
-            const isActive =
-              pathname === item.href || pathname.startsWith(item.href + '/')
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`${styles.navItem} ${isActive ? styles.active : ''}`}
-                aria-current={isActive ? 'page' : undefined}
-              >
-                <Icon size={18} />
-                <span>{item.label}</span>
-              </Link>
-            )
-          })}
+          {navGroups.map((group) => (
+            <div key={group.label} className={styles.navGroup}>
+              <div className={styles.navLabel}>{group.label}</div>
+              {group.items.map((item) => {
+                const Icon = item.icon
+                const isActive =
+                  pathname === item.href || pathname.startsWith(item.href + '/')
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`${styles.navItem} ${isActive ? styles.active : ''}`}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    <Icon size={18} />
+                    <span>{item.label}</span>
+                  </Link>
+                )
+              })}
+            </div>
+          ))}
         </nav>
 
         <div className={styles.footer}>

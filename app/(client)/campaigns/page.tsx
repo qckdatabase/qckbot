@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { CalendarPlus, Sparkles } from 'lucide-react'
+import { CalendarPlus, Sparkles, Info, Trash2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import styles from './page.module.css'
 
 interface Campaign {
@@ -58,6 +59,33 @@ export default function CampaignsPage() {
   const [error, setError] = useState('')
   const [planning, setPlanning] = useState(false)
   const [generatingId, setGeneratingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deletingMonth, setDeletingMonth] = useState(false)
+  const [confirmState, setConfirmState] = useState<{
+    open: boolean
+    title: string
+    message: string
+    confirmLabel: string
+    variant: 'danger' | 'primary'
+    action: () => Promise<void>
+  } | null>(null)
+  const [confirmLoading, setConfirmLoading] = useState(false)
+
+  const closeConfirm = () => {
+    if (confirmLoading) return
+    setConfirmState(null)
+  }
+
+  const runConfirm = async () => {
+    if (!confirmState) return
+    setConfirmLoading(true)
+    try {
+      await confirmState.action()
+    } finally {
+      setConfirmLoading(false)
+      setConfirmState(null)
+    }
+  }
 
   const load = useCallback(async () => {
     setError('')
@@ -90,6 +118,72 @@ export default function CampaignsPage() {
     } finally {
       setPlanning(false)
     }
+  }
+
+  function askDelete(id: string, title: string) {
+    setConfirmState({
+      open: true,
+      title: 'Delete campaign?',
+      message: `"${title}" will be permanently removed. This cannot be undone.`,
+      confirmLabel: 'Delete',
+      variant: 'danger',
+      action: async () => {
+        setDeletingId(id)
+        setError('')
+        try {
+          const res = await fetch(`/api/campaigns/${id}`, { method: 'DELETE' })
+          const json = await safeJson(res)
+          if (!res.ok) throw new Error(json.error || 'Delete failed')
+          setCampaigns((prev) => prev.filter((c) => c.id !== id))
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Delete failed')
+        } finally {
+          setDeletingId(null)
+        }
+      },
+    })
+  }
+
+  function askDeleteMonth(weekKeyIso: string) {
+    const weekStart = new Date(weekKeyIso + 'T00:00:00Z')
+    const targetMonth = weekStart.getUTCMonth() + 1
+    const targetYear = weekStart.getUTCFullYear()
+    const ids = campaigns
+      .filter((c) => {
+        if (!c.scheduled_for) return false
+        const d = new Date(c.scheduled_for + 'T00:00:00Z')
+        return d.getUTCFullYear() === targetYear && d.getUTCMonth() + 1 === targetMonth
+      })
+      .map((c) => c.id)
+    if (ids.length === 0) return
+    const monthLabel = `${targetYear}-${String(targetMonth).padStart(2, '0')}`
+    setConfirmState({
+      open: true,
+      title: 'Clear month?',
+      message: `All ${ids.length} campaigns scheduled in ${monthLabel} will be permanently removed. This cannot be undone.`,
+      confirmLabel: `Delete ${ids.length}`,
+      variant: 'danger',
+      action: async () => {
+        setDeletingMonth(true)
+        setError('')
+        try {
+          const results = await Promise.allSettled(
+            ids.map((id) => fetch(`/api/campaigns/${id}`, { method: 'DELETE' }))
+          )
+          const failed = results.filter(
+            (r) => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok)
+          ).length
+          if (failed > 0) {
+            setError(`${failed} of ${ids.length} deletions failed`)
+          }
+          await load()
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Bulk delete failed')
+        } finally {
+          setDeletingMonth(false)
+        }
+      },
+    })
   }
 
   async function handleGenerate(id: string) {
@@ -137,6 +231,19 @@ export default function CampaignsPage() {
         </Button>
       </div>
 
+      <div className={styles.note}>
+        <Info size={14} className={styles.noteIcon} />
+        <span>
+          Cannibalization guard reads four sources before suggesting keywords:
+          existing drafts, live blog slugs, live product slugs, and the latest{' '}
+          <Link href="/keywords" className={styles.noteLink}>Keyword Tracker</Link> snapshot.
+          Drafts and sitemap data are pulled live each run; the tracker snapshot
+          refreshes weekly via cron. If you published new content recently,
+          click <strong>Regenerate</strong> on the Keyword Tracker page before
+          planning to avoid duplicate keywords.
+        </span>
+      </div>
+
       {error && <p className={styles.errorBar}>{error}</p>}
       {loading && <p className={styles.loading}>Loading...</p>}
 
@@ -154,6 +261,16 @@ export default function CampaignsPage() {
           <h2 className={styles.weekHeader}>
             Week of {formatDate(wk)}
             <span className={styles.weekCount}>{byWeek.get(wk)!.length} contents</span>
+            <button
+              type="button"
+              className={styles.weekDeleteBtn}
+              onClick={() => askDeleteMonth(wk)}
+              disabled={deletingMonth}
+              title="Delete all campaigns in this month"
+            >
+              <Trash2 size={12} />
+              {deletingMonth ? 'Deleting...' : 'Clear month'}
+            </button>
           </h2>
           <div className={styles.weekGrid}>
             {byWeek.get(wk)!.map((c) => (
@@ -184,6 +301,16 @@ export default function CampaignsPage() {
                       </Button>
                     </Link>
                   )}
+                  <button
+                    type="button"
+                    className={styles.deleteBtn}
+                    onClick={() => askDelete(c.id, c.title)}
+                    disabled={deletingId === c.id}
+                    aria-label="Delete campaign"
+                    title="Delete campaign"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </Card>
             ))}
@@ -196,23 +323,46 @@ export default function CampaignsPage() {
           <h2 className={styles.weekHeader}>Ad-hoc</h2>
           <div className={styles.grid}>
             {adhoc.map((c) => (
-              <Link key={c.id} href={`/campaigns/${c.id}`}>
-                <Card className={styles.card}>
-                  <div className={styles.cardHeader}>
-                    <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
-                    <span className={styles.date}>
-                      {new Date(c.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <h3>{c.title}</h3>
-                  <div className={styles.keyword}>{c.primary_keyword}</div>
-                  <div className={styles.type}>{c.content_type.replace(/_/g, ' ')}</div>
-                </Card>
-              </Link>
+              <div key={c.id} className={styles.adhocItem}>
+                <Link href={`/campaigns/${c.id}`} className={styles.adhocLink}>
+                  <Card className={styles.card}>
+                    <div className={styles.cardHeader}>
+                      <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
+                      <span className={styles.date}>
+                        {new Date(c.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <h3>{c.title}</h3>
+                    <div className={styles.keyword}>{c.primary_keyword}</div>
+                    <div className={styles.type}>{c.content_type.replace(/_/g, ' ')}</div>
+                  </Card>
+                </Link>
+                <button
+                  type="button"
+                  className={styles.adhocDeleteBtn}
+                  onClick={() => askDelete(c.id, c.title)}
+                  disabled={deletingId === c.id}
+                  aria-label="Delete campaign"
+                  title="Delete campaign"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             ))}
           </div>
         </section>
       )}
+
+      <ConfirmDialog
+        isOpen={!!confirmState}
+        title={confirmState?.title || ''}
+        message={confirmState?.message || ''}
+        confirmLabel={confirmState?.confirmLabel}
+        variant={confirmState?.variant}
+        loading={confirmLoading}
+        onConfirm={runConfirm}
+        onCancel={closeConfirm}
+      />
     </div>
   )
 }

@@ -45,6 +45,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Tenant domain not configured' }, { status: 400 })
   }
 
+  const monthStart = `${year}-${String(month).padStart(2, '0')}-01`
+  const nextMonthNum = month === 12 ? 1 : month + 1
+  const nextMonthYear = month === 12 ? year + 1 : year
+  const monthEnd = `${nextMonthYear}-${String(nextMonthNum).padStart(2, '0')}-01`
+
+  const { data: existingInMonth } = await db
+    .from('campaigns')
+    .select('id')
+    .eq('tenant_id', auth.tenantId)
+    .gte('scheduled_for', monthStart)
+    .lt('scheduled_for', monthEnd) as {
+      data: Array<{ id: string }> | null
+    }
+
+  if ((existingInMonth?.length ?? 0) > 0) {
+    return NextResponse.json(
+      {
+        error: `${year}-${String(month).padStart(2, '0')} already has ${existingInMonth!.length} campaign(s) scheduled. Delete them before re-planning this month.`,
+        already_planned: true,
+        existing_count: existingInMonth!.length,
+        year,
+        month,
+      },
+      { status: 409 }
+    )
+  }
+
   const { data: existing } = await db
     .from('campaigns')
     .select('primary_keyword')
@@ -58,6 +85,20 @@ export async function POST(request: Request) {
 
   const liveKeywords = await getLiveKeywords(tenant.sitemap_url)
 
+  const { data: trackedRow } = await db
+    .from('store_keywords')
+    .select('payload')
+    .eq('tenant_id', auth.tenantId)
+    .order('generated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle() as {
+      data: { payload: { keywords?: Array<{ keyword: string }> } | null } | null
+    }
+
+  const trackedKeywords = (trackedRow?.payload?.keywords || [])
+    .map((k) => (k.keyword || '').trim().toLowerCase())
+    .filter(Boolean)
+
   let items
   try {
     items = await planMonth({
@@ -66,6 +107,7 @@ export async function POST(request: Request) {
       takenKeywords,
       liveBlogKeywords: liveKeywords.blogs,
       liveProductKeywords: liveKeywords.products,
+      trackedKeywords,
       count,
     })
   } catch (err) {

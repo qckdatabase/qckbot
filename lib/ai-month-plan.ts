@@ -23,6 +23,7 @@ interface PlanMonthArgs {
   takenKeywords: string[]
   liveBlogKeywords: string[]
   liveProductKeywords: string[]
+  trackedKeywords?: string[]
   count: number
 }
 
@@ -50,7 +51,15 @@ const SCHEMA = {
 } as const
 
 export async function planMonth(args: PlanMonthArgs): Promise<MonthPlanItem[]> {
-  const { domain, brandVoice, takenKeywords, liveBlogKeywords, liveProductKeywords, count } = args
+  const {
+    domain,
+    brandVoice,
+    takenKeywords,
+    liveBlogKeywords,
+    liveProductKeywords,
+    trackedKeywords = [],
+    count,
+  } = args
 
   const fmtList = (label: string, items: string[]) => {
     const unique = Array.from(new Set(items.filter(Boolean)))
@@ -62,6 +71,7 @@ export async function planMonth(args: PlanMonthArgs): Promise<MonthPlanItem[]> {
     fmtList('Already-generated draft keywords', takenKeywords),
     fmtList('Live store blog slugs', liveBlogKeywords),
     fmtList('Live store product slugs', liveProductKeywords),
+    fmtList('Tracked store keywords (audited via web search + Ahrefs)', trackedKeywords),
   ].join('\n')
 
   const systemPrompt = [
