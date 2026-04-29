@@ -1,5 +1,6 @@
 .wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-bg);
@@ -7,9 +8,14 @@
 
 .table {
   width: 100%;
+  min-width: 560px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: var(--text-base);
+}
+
+.table td {
+  white-space: nowrap;
 }
 
 .table thead {
