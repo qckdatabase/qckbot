@@ -250,6 +250,8 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-3);
+  padding-right: 40px;
+  gap: var(--space-2);
 }
 
 .card h3 {
