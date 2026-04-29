@@ -344,9 +344,21 @@ export default function SerpTrackerPage() {
                     )}
                   </td>
                   <td className={styles.cellDate}>
-                    {k.latest_checked_at
-                      ? new Date(k.latest_checked_at).toLocaleString()
-                      : <span className={styles.muted}>Never</span>}
+                    {k.latest_checked_at ? (
+                      <span title={new Date(k.latest_checked_at).toLocaleString()}>
+                        {new Date(k.latest_checked_at).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          year:
+                            new Date(k.latest_checked_at).getFullYear() !==
+                            new Date().getFullYear()
+                              ? 'numeric'
+                              : undefined,
+                        })}
+                      </span>
+                    ) : (
+                      <span className={styles.muted}>Never</span>
+                    )}
                   </td>
                   <td>
                     <div className={styles.actions}>

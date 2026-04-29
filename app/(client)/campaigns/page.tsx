@@ -144,19 +144,55 @@ export default function CampaignsPage() {
     })
   }
 
-  function askDeleteMonth(weekKeyIso: string) {
-    const weekStart = new Date(weekKeyIso + 'T00:00:00Z')
-    const targetMonth = weekStart.getUTCMonth() + 1
-    const targetYear = weekStart.getUTCFullYear()
+  function askDeleteWeek(weekKeyIso: string) {
+    const weekCampaigns = campaigns.filter(
+      (c) => c.scheduled_for && weekKey(c.scheduled_for) === weekKeyIso
+    )
+    const ids = weekCampaigns.map((c) => c.id)
+    if (ids.length === 0) return
+    const weekLabel = formatDate(weekKeyIso)
+    setConfirmState({
+      open: true,
+      title: 'Clear this week?',
+      message: `All ${ids.length} campaigns in the week of ${weekLabel} will be permanently removed. This cannot be undone.`,
+      confirmLabel: `Delete ${ids.length}`,
+      variant: 'danger',
+      action: async () => {
+        setDeletingMonth(true)
+        setError('')
+        try {
+          const results = await Promise.allSettled(
+            ids.map((id) => fetch(`/api/campaigns/${id}`, { method: 'DELETE' }))
+          )
+          const failed = results.filter(
+            (r) => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok)
+          ).length
+          if (failed > 0) {
+            setError(`${failed} of ${ids.length} deletions failed`)
+          }
+          await load()
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Bulk delete failed')
+        } finally {
+          setDeletingMonth(false)
+        }
+      },
+    })
+  }
+
+  function askDeleteMonth(year: number, month: number) {
     const ids = campaigns
       .filter((c) => {
         if (!c.scheduled_for) return false
         const d = new Date(c.scheduled_for + 'T00:00:00Z')
-        return d.getUTCFullYear() === targetYear && d.getUTCMonth() + 1 === targetMonth
+        return d.getUTCFullYear() === year && d.getUTCMonth() + 1 === month
       })
       .map((c) => c.id)
     if (ids.length === 0) return
-    const monthLabel = `${targetYear}-${String(targetMonth).padStart(2, '0')}`
+    const monthLabel = new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(undefined, {
+      month: 'long',
+      year: 'numeric',
+    })
     setConfirmState({
       open: true,
       title: 'Clear month?',
@@ -204,17 +240,25 @@ export default function CampaignsPage() {
   const scheduled = campaigns.filter((c) => c.scheduled_for)
   const adhoc = campaigns.filter((c) => !c.scheduled_for)
 
-  const byWeek = new Map<string, Campaign[]>()
+  const byMonth = new Map<string, { year: number; month: number; weeks: Map<string, Campaign[]> }>()
   for (const c of scheduled) {
     if (!c.scheduled_for) continue
+    const d = new Date(c.scheduled_for + 'T00:00:00Z')
+    const y = d.getUTCFullYear()
+    const m = d.getUTCMonth() + 1
+    const monthKey = `${y}-${String(m).padStart(2, '0')}`
+    if (!byMonth.has(monthKey)) byMonth.set(monthKey, { year: y, month: m, weeks: new Map() })
+    const monthEntry = byMonth.get(monthKey)!
     const wk = weekKey(c.scheduled_for)
-    if (!byWeek.has(wk)) byWeek.set(wk, [])
-    byWeek.get(wk)!.push(c)
+    if (!monthEntry.weeks.has(wk)) monthEntry.weeks.set(wk, [])
+    monthEntry.weeks.get(wk)!.push(c)
   }
-  for (const list of byWeek.values()) {
-    list.sort((a, b) => (a.scheduled_for || '').localeCompare(b.scheduled_for || ''))
+  for (const monthEntry of byMonth.values()) {
+    for (const list of monthEntry.weeks.values()) {
+      list.sort((a, b) => (a.scheduled_for || '').localeCompare(b.scheduled_for || ''))
+    }
   }
-  const weekKeys = Array.from(byWeek.keys()).sort()
+  const monthKeys = Array.from(byMonth.keys()).sort()
 
   return (
     <div className={styles.page}>
@@ -256,24 +300,48 @@ export default function CampaignsPage() {
         </Card>
       )}
 
-      {weekKeys.map((wk) => (
-        <section key={wk} className={styles.weekSection}>
-          <h2 className={styles.weekHeader}>
+      {monthKeys.map((monthKey) => {
+        const monthEntry = byMonth.get(monthKey)!
+        const monthLabel = new Date(Date.UTC(monthEntry.year, monthEntry.month - 1, 1)).toLocaleDateString(undefined, {
+          month: 'long',
+          year: 'numeric',
+        })
+        const weekKeys = Array.from(monthEntry.weeks.keys()).sort()
+        const monthCount = Array.from(monthEntry.weeks.values()).reduce((s, l) => s + l.length, 0)
+        return (
+          <section key={monthKey} className={styles.monthSection}>
+            <h2 className={styles.monthHeader}>
+              <span className={styles.monthLabel}>{monthLabel}</span>
+              <span className={styles.weekCount}>{monthCount} contents</span>
+              <button
+                type="button"
+                className={styles.weekDeleteBtn}
+                onClick={() => askDeleteMonth(monthEntry.year, monthEntry.month)}
+                disabled={deletingMonth}
+                title={`Delete all campaigns in ${monthLabel}`}
+              >
+                <Trash2 size={12} />
+                {deletingMonth ? 'Deleting...' : 'Clear month'}
+              </button>
+            </h2>
+            {weekKeys.map((wk) => (
+        <section key={`${monthKey}-${wk}`} className={styles.weekSection}>
+          <h3 className={styles.weekHeader}>
             Week of {formatDate(wk)}
-            <span className={styles.weekCount}>{byWeek.get(wk)!.length} contents</span>
+            <span className={styles.weekCount}>{monthEntry.weeks.get(wk)!.length} contents</span>
             <button
               type="button"
               className={styles.weekDeleteBtn}
-              onClick={() => askDeleteMonth(wk)}
+              onClick={() => askDeleteWeek(wk)}
               disabled={deletingMonth}
-              title="Delete all campaigns in this month"
+              title="Delete all campaigns in this week"
             >
               <Trash2 size={12} />
-              {deletingMonth ? 'Deleting...' : 'Clear month'}
+              Clear week
             </button>
-          </h2>
+          </h3>
           <div className={styles.weekGrid}>
-            {byWeek.get(wk)!.map((c) => (
+            {monthEntry.weeks.get(wk)!.map((c) => (
               <Card key={c.id} className={styles.scheduleCard}>
                 <div className={styles.scheduleHeader}>
                   <span className={styles.scheduleDate}>
@@ -316,7 +384,10 @@ export default function CampaignsPage() {
             ))}
           </div>
         </section>
-      ))}
+            ))}
+          </section>
+        )
+      })}
 
       {adhoc.length > 0 && (
         <section className={styles.adhocSection}>

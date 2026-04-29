@@ -4,8 +4,33 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+
+function statusVariant(status: string): 'success' | 'warning' | 'default' | 'error' {
+  if (status === 'published') return 'success'
+  if (status === 'reviewing' || status === 'generated') return 'warning'
+  if (status === 'failed') return 'error'
+  return 'default'
+}
+
+function statusLabel(status: string): string {
+  switch (status) {
+    case 'pending':
+      return 'Pending'
+    case 'generated':
+      return 'Generated'
+    case 'reviewing':
+      return 'In review'
+    case 'published':
+      return 'Published'
+    case 'failed':
+      return 'Failed'
+    default:
+      return status
+  }
+}
 import styles from './page.module.css'
 
 interface Campaign {
@@ -106,13 +131,21 @@ export default function CampaignDetailPage({ params }: { params: { id: string } 
 
   return (
     <div className={styles.page}>
+      <button
+        type="button"
+        className={styles.backBtn}
+        onClick={() => router.push('/campaigns')}
+      >
+        <ArrowLeft size={14} />
+        <span>Back to campaigns</span>
+      </button>
+
       <div className={styles.header}>
-        <div>
-          <Button variant="ghost" onClick={() => router.push('/campaigns')}>
-            Back
-          </Button>
+        <div className={styles.titleBlock}>
           <h1>{campaign.title}</h1>
-          <Badge variant={campaign.status === 'generated' ? 'success' : campaign.status === 'reviewing' ? 'warning' : 'default'}>{campaign.status}</Badge>
+          <Badge variant={statusVariant(campaign.status)}>
+            {statusLabel(campaign.status)}
+          </Badge>
         </div>
         <div className={styles.actions}>
           {campaign.status === 'generated' && (

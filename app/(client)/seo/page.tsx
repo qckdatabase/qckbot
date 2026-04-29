@@ -1,6 +1,13 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import {
+  TrendingUp,
+  Search as SearchIcon,
+  Link as LinkIcon,
+  BarChart3,
+  RefreshCw,
+} from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Table } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
@@ -135,39 +142,94 @@ export default function SEOPage() {
     )
   }
 
-  const { current, keywords, backlinks } = data
+  const { current, keywords, backlinks, historical } = data
+  const previous = historical && historical.length > 1 ? historical[1] : null
+
+  function delta(curr: number, prev: number | null | undefined) {
+    if (prev === null || prev === undefined || prev === 0) return null
+    const d = curr - prev
+    if (d === 0) return null
+    const pct = (d / prev) * 100
+    return { value: d, pct, positive: d > 0 }
+  }
+
+  const drDelta = delta(current.domain_rating, previous?.domain_rating)
+  const kwDelta = delta(current.organic_keywords, previous?.organic_keywords)
+  const blDelta = delta(current.backlinks, previous?.backlinks)
+  const trDelta = delta(current.est_monthly_traffic, previous?.est_monthly_traffic)
 
   return (
     <div className={styles.page}>
-      <div className={styles.headerRow}>
-        <h1>SEO Metrics</h1>
+      <div className={styles.header}>
+        <div>
+          <h1>SEO Metrics</h1>
+          <p className={styles.subtitle}>
+            Latest snapshot pulled from Ahrefs — domain authority, organic keyword footprint, and backlink profile.
+          </p>
+        </div>
         <Button variant="secondary" size="sm" onClick={handleRefresh} loading={refreshing}>
+          <RefreshCw size={14} />
           Refresh
         </Button>
       </div>
 
       <div className={styles.kpiGrid}>
         <Card className={styles.kpiCard}>
-          <div className={styles.kpiLabel}>Domain Rating</div>
+          <div className={styles.kpiHeader}>
+            <span className={styles.kpiLabel}>Domain Rating</span>
+            <TrendingUp size={14} className={styles.kpiIcon} />
+          </div>
           <div className={styles.kpiValue}>{current.domain_rating}</div>
+          {drDelta && (
+            <div className={`${styles.kpiDelta} ${drDelta.positive ? styles.up : styles.down}`}>
+              {drDelta.positive ? '+' : ''}{drDelta.value} ({drDelta.pct.toFixed(1)}%)
+            </div>
+          )}
         </Card>
         <Card className={styles.kpiCard}>
-          <div className={styles.kpiLabel}>Organic Keywords</div>
+          <div className={styles.kpiHeader}>
+            <span className={styles.kpiLabel}>Organic Keywords</span>
+            <SearchIcon size={14} className={styles.kpiIcon} />
+          </div>
           <div className={styles.kpiValue}>{formatNumber(current.organic_keywords)}</div>
+          {kwDelta && (
+            <div className={`${styles.kpiDelta} ${kwDelta.positive ? styles.up : styles.down}`}>
+              {kwDelta.positive ? '+' : ''}{formatNumber(Math.abs(kwDelta.value))} ({kwDelta.pct.toFixed(1)}%)
+            </div>
+          )}
         </Card>
         <Card className={styles.kpiCard}>
-          <div className={styles.kpiLabel}>Backlinks</div>
+          <div className={styles.kpiHeader}>
+            <span className={styles.kpiLabel}>Backlinks</span>
+            <LinkIcon size={14} className={styles.kpiIcon} />
+          </div>
           <div className={styles.kpiValue}>{formatNumber(current.backlinks)}</div>
+          {blDelta && (
+            <div className={`${styles.kpiDelta} ${blDelta.positive ? styles.up : styles.down}`}>
+              {blDelta.positive ? '+' : ''}{formatNumber(Math.abs(blDelta.value))} ({blDelta.pct.toFixed(1)}%)
+            </div>
+          )}
         </Card>
         <Card className={styles.kpiCard}>
-          <div className={styles.kpiLabel}>Est. Monthly Traffic</div>
+          <div className={styles.kpiHeader}>
+            <span className={styles.kpiLabel}>Est. Monthly Traffic</span>
+            <BarChart3 size={14} className={styles.kpiIcon} />
+          </div>
           <div className={styles.kpiValue}>{formatNumber(current.est_monthly_traffic)}</div>
+          {trDelta && (
+            <div className={`${styles.kpiDelta} ${trDelta.positive ? styles.up : styles.down}`}>
+              {trDelta.positive ? '+' : ''}{formatNumber(Math.abs(trDelta.value))} ({trDelta.pct.toFixed(1)}%)
+            </div>
+          )}
         </Card>
       </div>
 
       <div className={styles.tablesGrid}>
         <Card>
-          <h3>Top Keywords</h3>
+          <div className={styles.tableHeader}>
+            <h3>Top Keywords</h3>
+            <span className={styles.countBadge}>{keywords.length}</span>
+          </div>
           {keywords.length === 0 ? (
             <p className={styles.empty}>No keyword data.</p>
           ) : (
@@ -175,8 +237,10 @@ export default function SEOPage() {
               <Table headers={['Keyword', 'Pos', 'Volume', 'KD']}>
                 {paginate(keywords, keywordsPage, PAGE_SIZE).map((k, i) => (
                   <tr key={`${k.keyword}-${i}`}>
-                    <td>{k.keyword}</td>
-                    <td>{k.position}</td>
+                    <td className={styles.keywordCell}>{k.keyword}</td>
+                    <td>
+                      <span className={styles.positionPill}>#{k.position}</span>
+                    </td>
                     <td>{formatNumber(k.volume)}</td>
                     <td>{k.difficulty}</td>
                   </tr>
@@ -193,7 +257,10 @@ export default function SEOPage() {
         </Card>
 
         <Card>
-          <h3>Top Backlinks</h3>
+          <div className={styles.tableHeader}>
+            <h3>Top Backlinks</h3>
+            <span className={styles.countBadge}>{backlinks.length}</span>
+          </div>
           {backlinks.length === 0 ? (
             <p className={styles.empty}>No backlink data.</p>
           ) : (
