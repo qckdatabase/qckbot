@@ -1,29 +1,68 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireTenant } from '@/lib/auth/api'
+import { getDb } from '@/lib/auth/db'
 import { getSiteMetrics, getKeywords, getBacklinks } from '@/lib/ahrefs'
 
+interface SeoSnapshot {
+  domain: string
+  current: {
+    domain_rating: number
+    organic_keywords: number
+    backlinks: number
+    est_monthly_traffic: number
+  }
+  keywords: Array<{ keyword: string; position: number; volume: number; difficulty: number; url: string }>
+  backlinks: Array<{ url: string; domain_rating: number; traffic: number }>
+  historical: Array<{
+    snapshot_date: string
+    domain_rating: number | null
+    organic_keywords: number | null
+    backlinks: number | null
+    est_monthly_traffic: number | null
+  }>
+}
+
+async function loadHistorical(db: ReturnType<typeof getDb>, tenantId: string) {
+  const { data } = await db
+    .from('seo_metrics')
+    .select('snapshot_date, domain_rating, organic_keywords, backlinks, est_monthly_traffic')
+    .eq('tenant_id', tenantId)
+    .order('snapshot_date', { ascending: true })
+    .limit(12)
+  return data || []
+}
+
 export async function GET() {
-  const supabase = await createClient()
+  const auth = await requireTenant()
+  if (!auth.ok) return auth.response
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  const db = getDb()
+  const { data: latest } = await db
+    .from('seo_metrics')
+    .select('payload, snapshot_date')
+    .eq('tenant_id', auth.tenantId)
+    .not('payload', 'is', null)
+    .order('snapshot_date', { ascending: false })
+    .limit(1)
+    .maybeSingle() as { data: { payload: SeoSnapshot; snapshot_date: string } | null }
+
+  if (!latest?.payload) {
+    return Response.json({ cached: false, data: null })
   }
 
-  const { data: userData } = await supabase
-    .from('users')
-    .select('tenant_id')
-    .eq('id', user.id)
-    .single()
+  const historical = await loadHistorical(db, auth.tenantId)
+  return Response.json({ ...latest.payload, historical, cached: true, snapshot_date: latest.snapshot_date })
+}
 
-  if (!userData?.tenant_id) {
-    return Response.json({ error: 'No tenant' }, { status: 400 })
-  }
+export async function POST() {
+  const auth = await requireTenant()
+  if (!auth.ok) return auth.response
 
-  const { data: tenant } = await supabase
+  const db = getDb()
+  const { data: tenant } = await db
     .from('tenants')
     .select('domain, ahrefs_target')
-    .eq('id', userData.tenant_id)
-    .single()
+    .eq('id', auth.tenantId)
+    .single() as { data: { domain: string | null; ahrefs_target: string | null } | null }
 
   if (!tenant?.ahrefs_target) {
     return Response.json({ error: 'No Ahrefs target configured' }, { status: 400 })
@@ -39,31 +78,37 @@ export async function GET() {
     ])
 
     const today = new Date().toISOString().split('T')[0]
-
-    await supabase.from('seo_metrics').upsert({
-      tenant_id: userData.tenant_id,
-      snapshot_date: today,
-      domain_rating: metrics.domain_rating,
-      organic_keywords: metrics.organic_keywords,
-      backlinks: metrics.backlinks,
-      est_monthly_traffic: metrics.est_monthly_traffic,
-    })
-
-    const { data: historicalMetrics } = await supabase
-      .from('seo_metrics')
-      .select('*')
-      .eq('tenant_id', userData.tenant_id)
-      .order('snapshot_date', { ascending: true })
-      .limit(12)
-
-    return Response.json({
+    const historical = await loadHistorical(db, auth.tenantId)
+    const payload: SeoSnapshot = {
+      domain,
       current: metrics,
-      keywords: keywords.slice(0, 20),
-      backlinks: backlinks.slice(0, 20),
-      historical: historicalMetrics || [],
-    })
+      keywords,
+      backlinks,
+      historical,
+    }
+
+    const { error: upsertErr } = await db.from('seo_metrics').upsert(
+      {
+        tenant_id: auth.tenantId,
+        snapshot_date: today,
+        domain_rating: metrics.domain_rating,
+        organic_keywords: metrics.organic_keywords,
+        backlinks: metrics.backlinks,
+        est_monthly_traffic: metrics.est_monthly_traffic,
+        payload,
+      },
+      { onConflict: 'tenant_id,snapshot_date' }
+    )
+    if (upsertErr) {
+      console.error('seo_metrics upsert failed:', upsertErr)
+    }
+
+    const updatedHistorical = await loadHistorical(db, auth.tenantId)
+
+    return Response.json({ ...payload, historical: updatedHistorical, cached: false })
   } catch (error) {
     console.error('Ahrefs API error:', error)
-    return Response.json({ error: 'Failed to fetch SEO data' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Failed to fetch SEO data'
+    return Response.json({ error: message }, { status: 500 })
   }
 }

@@ -1,5 +1,5 @@
 .page {
-  max-width: 1200px;
+  width: 100%;
 }
 
 .page h1 {
@@ -20,6 +20,12 @@
   gap: var(--space-4);
 }
 
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .toggles {
   display: flex;
   gap: var(--space-2);
@@ -27,6 +33,17 @@
   padding: var(--space-1);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
+}
+
+.error {
+  color: var(--color-error);
+  margin-bottom: var(--space-4);
+}
+
+.empty {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-text-muted);
 }
 
 .toggle {
@@ -57,11 +74,104 @@
 
 .row {
   display: grid;
-  grid-template-columns: 60px 1fr 200px;
+  grid-template-columns: 60px 1fr 240px;
   gap: var(--space-4);
-  align-items: center;
+  align-items: flex-start;
   padding: var(--space-4);
   border-bottom: 1px solid var(--color-border);
+}
+
+@media (max-width: 768px) {
+  .row {
+    grid-template-columns: 50px 1fr;
+  }
+  .row .metrics {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+
+.rationale {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+  line-height: 1.45;
+}
+
+.scoreCell {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.scoreValue {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  line-height: 1;
+}
+
+.scoreLabel {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  margin-top: calc(var(--space-4) * -1);
+  margin-bottom: var(--space-6);
+}
+
+.searchBar {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.input {
+  flex: 1;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 150ms ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.metaText {
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.timestamp {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-left: auto;
+}
+
+.sourceLink {
+  display: inline-block;
+  margin-top: var(--space-2);
+  font-size: 12px;
+  color: var(--color-accent-dark);
+  text-decoration: underline;
 }
 
 .row:last-child {

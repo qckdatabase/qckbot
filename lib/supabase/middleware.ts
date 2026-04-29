@@ -63,7 +63,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     if (userData?.role === 'admin') {
-      return NextResponse.redirect(new URL('/admin/clients', request.url))
+      return NextResponse.redirect(new URL('/clients', request.url))
     }
 
     return NextResponse.redirect(new URL('/dashboard', request.url))

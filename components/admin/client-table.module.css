@@ -54,3 +54,13 @@
   text-align: center;
   color: var(--color-text-muted);
 }
+
+.error {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
+  font-size: var(--text-sm);
+}

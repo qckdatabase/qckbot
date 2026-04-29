@@ -2,7 +2,7 @@ export type UserRole = 'admin' | 'client'
 
 export type TenantStatus = 'active' | 'deactivated'
 
-export type CampaignStatus = 'generating' | 'generated' | 'revising' | 'approved' | 'posted' | 'failed'
+export type CampaignStatus = 'generated' | 'reviewing' | 'published' | 'failed'
 
 export type ContentType = 'blog' | 'shoppable' | 'listicle' | 'faq_guide' | 'llm' | 'collection_refresh' | 'location_page' | 'landing_page' | 'knowledge_center' | 'service_page' | 'blog_refresh'
 
@@ -18,6 +18,7 @@ export interface Tenant {
   google_sheet_id: string | null
   google_docs_folder_id: string | null
   slack_channel_id: string | null
+  competitor_domains: string[] | null
   status: TenantStatus
   created_at: string
 }

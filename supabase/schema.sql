@@ -1,5 +1,9 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- ============================================================
+-- TABLES
+-- ============================================================
+
 CREATE TABLE tenants (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   name TEXT NOT NULL,
@@ -12,17 +16,20 @@ CREATE TABLE tenants (
   google_sheet_id TEXT,
   google_docs_folder_id TEXT,
   slack_channel_id TEXT,
+  competitor_domains TEXT[] DEFAULT '{}',
   status TEXT DEFAULT 'active' CHECK (status IN ('active', 'deactivated')),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE users (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
-  email TEXT NOT NULL,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
   role TEXT DEFAULT 'client' CHECK (role IN ('admin', 'client')),
+  tenant_id UUID REFERENCES tenants(id) ON DELETE SET NULL,
   needs_password_change BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE seo_metrics (
@@ -46,6 +53,7 @@ CREATE TABLE competitors (
   traffic INTEGER,
   backlinks INTEGER,
   last_fetched TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -59,8 +67,8 @@ CREATE TABLE campaigns (
     'knowledge_center', 'service_page', 'blog_refresh'
   )),
   primary_keyword TEXT,
-  status TEXT DEFAULT 'generating' CHECK (status IN (
-    'generating', 'generated', 'revising', 'approved', 'posted', 'failed'
+  status TEXT DEFAULT 'generated' CHECK (status IN (
+    'generated', 'reviewing', 'published', 'failed'
   )),
   google_doc_url TEXT,
   live_url TEXT,
@@ -96,89 +104,14 @@ CREATE TABLE chat_messages (
   role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
   content TEXT NOT NULL,
   action_type TEXT CHECK (action_type IN ('generate_campaign', 'revise_draft', 'update_guardrail')),
+  campaign_id UUID REFERENCES campaigns(id),
   action_meta JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE seo_metrics ENABLE ROW LEVEL SECURITY;
-ALTER TABLE competitors ENABLE ROW LEVEL SECURITY;
-ALTER TABLE campaigns ENABLE ROW LEVEL SECURITY;
-ALTER TABLE guardrail_templates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE guardrail_values ENABLE ROW LEVEL SECURITY;
-ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Admins see all tenants" ON tenants
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM users WHERE users.id = auth.uid() AND users.role = 'admin')
-  );
-
-CREATE POLICY "Clients see own tenant" ON tenants
-  FOR SELECT USING (
-    tenant_id IN (SELECT tenant_id FROM users WHERE users.id = auth.uid())
-  );
-
-CREATE POLICY "Admins insert tenants" ON tenants
-  FOR INSERT WITH CHECK (
-    EXISTS (SELECT 1 FROM users WHERE users.id = auth.uid() AND users.role = 'admin')
-  );
-
-CREATE POLICY "Admins update tenants" ON tenants
-  FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM users WHERE users.id = auth.uid() AND users.role = 'admin')
-  );
-
-CREATE POLICY "Users see own data" ON users
-  FOR SELECT USING (id = auth.uid());
-
-CREATE POLICY "Admins see all users" ON users
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM users u2 WHERE u2.id = auth.uid() AND u2.role = 'admin')
-  );
-
-CREATE POLICY "Users see own tenant metrics" ON seo_metrics
-  FOR ALL USING (
-    tenant_id IN (SELECT tenant_id FROM users WHERE users.id = auth.uid())
-  );
-
-CREATE POLICY "Users see own competitors" ON competitors
-  FOR ALL USING (
-    tenant_id IN (SELECT tenant_id FROM users WHERE users.id = auth.uid())
-  );
-
-CREATE POLICY "Users see own campaigns" ON campaigns
-  FOR ALL USING (
-    tenant_id IN (SELECT tenant_id FROM users WHERE users.id = auth.uid())
-  );
-
-CREATE POLICY "All read guardrail templates" ON guardrail_templates
-  FOR SELECT TO authenticated USING (true);
-
-CREATE POLICY "Admins manage templates" ON guardrail_templates
-  FOR ALL USING (
-    EXISTS (SELECT 1 FROM users WHERE users.id = auth.uid() AND users.role = 'admin')
-  );
-
-CREATE POLICY "Users see own guardrails" ON guardrail_values
-  FOR ALL USING (
-    tenant_id IN (SELECT tenant_id FROM users WHERE users.id = auth.uid())
-  );
-
-CREATE POLICY "Users see own messages" ON chat_messages
-  FOR ALL USING (
-    tenant_id IN (SELECT tenant_id FROM users WHERE users.id = auth.uid())
-  );
-
-CREATE OR REPLACE FUNCTION get_user_tenant_id()
-RETURNS UUID AS $$
-  SELECT tenant_id FROM users WHERE id = auth.uid()
-$$ LANGUAGE SQL SECURITY DEFINER STABLE;
-
-CREATE OR REPLACE FUNCTION is_admin()
-RETURNS BOOLEAN AS $$
-  SELECT EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
-$$ LANGUAGE SQL SECURITY DEFINER STABLE;
+-- ============================================================
+-- TRIGGERS
+-- ============================================================
 
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS TRIGGER AS $$
@@ -192,8 +125,61 @@ CREATE TRIGGER campaigns_updated_at
   BEFORE UPDATE ON campaigns
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+CREATE TRIGGER guardrail_values_updated_at
+  BEFORE UPDATE ON guardrail_values
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER competitors_updated_at
+  BEFORE UPDATE ON competitors
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER users_updated_at
+  BEFORE UPDATE ON users
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ============================================================
+-- RLS (auth enforced in app code, service role bypasses RLS)
+-- ============================================================
+
+ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE seo_metrics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE competitors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE campaigns ENABLE ROW LEVEL SECURITY;
+ALTER TABLE guardrail_templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE guardrail_values ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "tenants_all" ON tenants FOR ALL USING (true);
+CREATE POLICY "users_all" ON users FOR ALL USING (true);
+CREATE POLICY "seo_metrics_all" ON seo_metrics FOR ALL USING (true);
+CREATE POLICY "competitors_all" ON competitors FOR ALL USING (true);
+CREATE POLICY "campaigns_all" ON campaigns FOR ALL USING (true);
+CREATE POLICY "guardrail_templates_all" ON guardrail_templates FOR ALL USING (true);
+CREATE POLICY "guardrail_values_all" ON guardrail_values FOR ALL USING (true);
+CREATE POLICY "chat_messages_all" ON chat_messages FOR ALL USING (true);
+
+-- ============================================================
+-- HELPERS
+-- ============================================================
+
+-- ============================================================
+-- INDEXES
+-- ============================================================
+
+CREATE INDEX idx_chat_messages_tenant_created ON chat_messages(tenant_id, created_at);
+CREATE INDEX idx_seo_metrics_tenant_date ON seo_metrics(tenant_id, snapshot_date);
+CREATE INDEX idx_campaigns_tenant_status ON campaigns(tenant_id, status);
+
+-- ============================================================
+-- SEED DATA
+-- ============================================================
+
 INSERT INTO guardrail_templates (content_type, field_name, template_content) VALUES
-('blog', 'structure', E'## [H1 Topic]\n\n[Opening paragraph - pain point focused]\n\n## [Major Section]\n\n[Content...]\n\n### [Subsection if needed]\n\n[Content...]\n\n## [Next Major Section]\n\n## [FAQ Section]\n\n### [Question 1]\n\n[Answer...]\n\n### [Question 2]\n\n[Answer...]'),
-('blog', 'metadata', E'Title: [Title]\nProposed URL: /[slug]\nTitle Tag: [Title]\nMeta Description: [170 char description with keyword]\nContent Intent: [What searcher intent does this serve]\nTarget Keyword: [primary keyword]'),
-('shoppable', 'structure', E'## [H1 Topic]\n\n[Opening paragraph - pain point focused, bottom of funnel]\n\n## [Major Section]\n\n[Content with embedded product mentions]\n\n### [Subsection]\n\n[Content...]\n\n## [Next Major Section]\n\n## [FAQ Section]\n\n### [Question 1]\n\n[Answer...]\n\n### [Question 2]\n\n[Answer...]'),
-('shoppable', 'metadata', E'Title: [Title]\nProposed URL: /[slug]\nTitle Tag: [Title]\nMeta Description: [170 char description]\nContent Intent: [Bottom of funnel, product-focused]\nTarget Keyword: [primary keyword]');
+('blog', 'structure', E'## Key Takeaways\n\n- **[Lead Phrase 1]**: [single explanation sentence].\n- **[Lead Phrase 2]**: [single explanation sentence].\n- **[Lead Phrase 3]**: [single explanation sentence].\n\n(EXACTLY 3 bullets. Each bullet MUST be: bold lead phrase, then colon, then one explanation sentence. Do not omit the bold or the colon.)\n\n## [H1 Topic — full title containing the primary keyword]\n\n[Paragraph 1 — Topical intro: define / describe the keyword topic, set context for the reader.]\n\n[Paragraph 2 — Brand intro: introduce the store and our offering as the trusted solution. Establish brand authority here.]\n\n[Paragraph 3 — Article preview starting with "In this blog, we''ll examine..." describing what sections follow.]\n\n(Opening section under Key Takeaways MUST be EXACTLY 3 paragraphs in this order — no more, no less)\n\n## [Major Section]\n\n[Bridge intro sentence (e.g. "Before X, understanding Y...") then content...]\n\n### [Subsection]\n\n[Content...]\n\n### [Subsection]\n\n[Content...]\n\n## [Next Major Section]\n\n[Repeat pattern: bridge sentence + 3-6 H3 subsections]\n\n## Frequently Asked Questions About [primary keyword]\n\n### [Question 1]\n\n[Answer]\n\n### [Question 2]\n\n[Answer]\n\n### [Question 3]\n\n[Answer]\n\n### [Question 4]\n\n[Answer]\n\n### [Question 5]\n\n[Answer]\n\n(EXACTLY 5 FAQ items, heading must be "Frequently Asked Questions About {primary keyword}")'),
+('blog', 'metadata', E'Title: [SEO-shaped title containing the primary keyword, <=60 chars]\nProposed URL: /[primary-keyword-as-slug]  -- slug MUST be the primary keyword (kebab-case)\nTitle Tag: [SEO title that contains the primary keyword, <=60 chars]\nMeta Description: [<=160 chars, includes primary keyword]\nContent Intent: [middle-of-funnel, informational/commercial]\nTarget Keyword: [primary keyword]'),
+('shoppable', 'structure', E'## [H1 Topic]\n\n[Opening paragraph - pain point focused, bottom of funnel]\n\n(NO "Key Takeaways" section — shoppables go straight from intro to product/feature content)\n\n## [Major Section]\n\n[Content with embedded product mentions]\n\n### [Subsection]\n\n[Content...]\n\n## [Next Major Section]\n\n## Frequently Asked Questions About [primary keyword]\n\n### [Question 1]\n\n[Answer]\n\n### [Question 2]\n\n[Answer]\n\n### [Question 3]\n\n[Answer]\n\n### [Question 4]\n\n[Answer]\n\n### [Question 5]\n\n[Answer]\n\n(EXACTLY 5 FAQ items, heading must be "Frequently Asked Questions About {primary keyword}")'),
+('shoppable', 'metadata', E'Title: [primary keyword verbatim, <=60 chars]  -- title MUST equal the primary keyword\nProposed URL: /[primary-keyword-as-slug]  -- slug MUST be the primary keyword (kebab-case)\nTitle Tag: [primary keyword, <=60 chars]  -- mirrors the keyword; brand suffix optional\nMeta Description: [<=160 chars, includes primary keyword]\nContent Intent: [bottom-of-funnel, commercial]\nTarget Keyword: [primary keyword]');
+
+INSERT INTO users (email, password_hash, role, tenant_id)
+VALUES ('kimg@qckbot.com', '$2b$12$4QzCe111Lg7bk7iCe7czp.QGy9FS.xfuv0nUEoY1HIXtq/CY9dwye', 'admin', NULL);

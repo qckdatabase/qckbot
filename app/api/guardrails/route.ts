@@ -1,68 +1,76 @@
-import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+import { requireUser, requireAdmin } from '@/lib/auth/api'
+import { getDb } from '@/lib/auth/db'
 
 export async function GET() {
-  const supabase = await createClient()
+  const auth = await requireUser()
+  if (!auth.ok) return auth.response
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { data: userData } = await supabase
-    .from('users')
-    .select('tenant_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!userData?.tenant_id) {
-    return Response.json({ error: 'No tenant' }, { status: 400 })
-  }
-
-  const { data: templates } = await supabase
+  const db = getDb()
+  const { data: templates, error } = await db
     .from('guardrail_templates')
-    .select('*')
+    .select('content_type, field_name, template_content')
+    .order('content_type', { ascending: true })
+    .order('field_name', { ascending: true })
 
-  const { data: values } = await supabase
-    .from('guardrail_values')
-    .select('*')
-    .eq('tenant_id', userData.tenant_id)
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
 
-  return Response.json({
-    templates: templates || [],
-    values: values || [],
-  })
+  return NextResponse.json({ templates: templates || [] })
 }
 
 export async function PUT(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { data: userData } = await supabase
-    .from('users')
-    .select('tenant_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!userData?.tenant_id) {
-    return Response.json({ error: 'No tenant' }, { status: 400 })
-  }
-
+  const db = getDb()
   const body = await request.json()
-  const { content_type, field_name, value } = body
+  const { content_type, field_name, template_content } = body
 
-  await supabase.from('guardrail_values').upsert({
-    tenant_id: userData.tenant_id,
-    content_type,
-    field_name,
-    value,
-    source: 'client',
-    needs_review: false,
-    updated_at: new Date().toISOString(),
-  })
+  if (!content_type || !field_name || typeof template_content !== 'string') {
+    return NextResponse.json(
+      { error: 'content_type, field_name, and template_content required' },
+      { status: 400 }
+    )
+  }
 
-  return Response.json({ success: true })
+  const { error } = await db
+    .from('guardrail_templates')
+    .upsert(
+      { content_type, field_name, template_content },
+      { onConflict: 'content_type,field_name' }
+    )
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ success: true })
+}
+
+export async function DELETE(request: Request) {
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+
+  const { searchParams } = new URL(request.url)
+  const content_type = searchParams.get('content_type')
+  const field_name = searchParams.get('field_name')
+
+  if (!content_type) {
+    return NextResponse.json({ error: 'content_type required' }, { status: 400 })
+  }
+
+  const db = getDb()
+  let query = db.from('guardrail_templates').delete().eq('content_type', content_type)
+  if (field_name) {
+    query = query.eq('field_name', field_name)
+  }
+
+  const { error } = await query
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ success: true })
 }

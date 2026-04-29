@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { getSession } from '@/lib/auth/session'
+import { getDb } from '@/lib/auth/db'
 import { Sidebar } from '@/components/ui/sidebar'
 import styles from './layout.module.css'
 
@@ -8,33 +9,34 @@ export default async function ClientLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
+  const { session } = await getSession()
 
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
+  if (!session.user) {
     redirect('/login')
   }
 
-  const { data: userData } = await supabase
-    .from('users')
-    .select('role, tenant_id')
-    .eq('id', user.id)
-    .single()
-
-  if (userData?.role === 'admin') {
-    redirect('/admin/clients')
+  if (session.user.role === 'admin') {
+    redirect('/clients')
   }
 
-  const { data: tenantData } = await supabase
-    .from('tenants')
-    .select('name')
-    .eq('id', userData?.tenant_id)
-    .single()
+  let tenantName = 'Client'
+  if (session.user.tenantId) {
+    const db = getDb()
+    const { data: tenant } = await db
+      .from('tenants')
+      .select('name, status')
+      .eq('id', session.user.tenantId)
+      .single() as { data: { name: string; status: string } | null }
+
+    if (tenant?.status === 'deactivated') {
+      redirect('/login?error=deactivated')
+    }
+    if (tenant?.name) tenantName = tenant.name
+  }
 
   return (
     <div className={styles.layout}>
-      <Sidebar tenantName={tenantData?.name || 'Client'} />
+      <Sidebar tenantName={tenantName} />
       <main className={styles.main}>{children}</main>
     </div>
   )

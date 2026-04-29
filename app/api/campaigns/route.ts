@@ -1,57 +1,32 @@
-import { createClient } from '@/lib/supabase/server'
+import { requireTenant, requireUser } from '@/lib/auth/api'
+import { getDb } from '@/lib/auth/db'
 
 export async function GET() {
-  const supabase = await createClient()
+  const auth = await requireTenant()
+  if (!auth.ok) return auth.response
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { data: userData } = await supabase
-    .from('users')
-    .select('tenant_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!userData?.tenant_id) {
-    return Response.json({ error: 'No tenant' }, { status: 400 })
-  }
-
-  const { data: campaigns } = await supabase
+  const db = getDb()
+  const { data: campaigns } = await db
     .from('campaigns')
     .select('*')
-    .eq('tenant_id', userData.tenant_id)
+    .eq('tenant_id', auth.tenantId)
     .order('created_at', { ascending: false })
 
   return Response.json({ campaigns: campaigns || [] })
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireTenant()
+  if (!auth.ok) return auth.response
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { data: userData } = await supabase
-    .from('users')
-    .select('tenant_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!userData?.tenant_id) {
-    return Response.json({ error: 'No tenant' }, { status: 400 })
-  }
-
+  const db = getDb()
   const body = await request.json()
   const { title, content_type, primary_keyword, generated_content } = body
 
-  const { data: campaign, error } = await supabase
+  const { data: campaign, error } = await db
     .from('campaigns')
     .insert({
-      tenant_id: userData.tenant_id,
+      tenant_id: auth.tenantId,
       title,
       content_type,
       primary_keyword,
@@ -69,13 +44,10 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const supabase = await createClient()
+  const auth = await requireUser()
+  if (!auth.ok) return auth.response
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
+  const db = getDb()
   const body = await request.json()
   const { id, status, google_doc_url, live_url, generated_content } = body
 
@@ -85,7 +57,7 @@ export async function PATCH(request: Request) {
   if (live_url) updates.live_url = live_url
   if (generated_content) updates.generated_content = generated_content
 
-  const { error } = await supabase
+  const { error } = await db
     .from('campaigns')
     .update(updates)
     .eq('id', id)

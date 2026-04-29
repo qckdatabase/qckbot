@@ -2,8 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, BarChart3, Users, FileText, Shield, MessageSquare, LogOut } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import {
+  TrendingUp,
+  Trophy,
+  FileText,
+  MessageSquare,
+  LogOut,
+} from 'lucide-react'
 import styles from './sidebar.module.css'
 
 interface SidebarProps {
@@ -11,31 +16,38 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/seo', label: 'SEO Metrics', icon: BarChart3 },
-  { href: '/ranking', label: 'Ranking', icon: BarChart3 },
-  { href: '/competitors', label: 'Competitors', icon: Users },
+  { href: '/seo', label: 'SEO Metrics', icon: TrendingUp },
+  { href: '/ranking', label: 'AI Ranking', icon: Trophy },
   { href: '/campaigns', label: 'Campaigns', icon: FileText },
-  { href: '/guardrails', label: 'Guardrails', icon: Shield },
   { href: '/chat', label: 'Chat', icon: MessageSquare },
 ]
 
 export function Sidebar({ tenantName }: SidebarProps) {
   const pathname = usePathname()
-  const supabase = createClient()
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
+    await fetch('/api/auth/logout', { method: 'POST' })
     window.location.href = '/login'
   }
 
   return (
     <aside className={styles.sidebar}>
       <div className={styles.header}>
-        <span className={styles.logo}>Qckbot</span>
-        <span className={styles.tenant}>{tenantName}</span>
+        <div className={styles.brand}>
+          <div className={styles.brandWrap}>
+            <span className={styles.logoMark}>
+              <img src="/logo.png" alt="QCK" />
+            </span>
+            <span className={styles.logo}>BOT</span>
+          </div>
+        </div>
+        <div className={styles.tenantPill} title={tenantName}>
+          <span className={styles.tenantDot} aria-hidden />
+          <span className={styles.tenantName}>{tenantName}</span>
+        </div>
       </div>
 
+      <div className={styles.navLabel}>Workspace</div>
       <nav className={styles.nav}>
         {navItems.map((item) => {
           const Icon = item.icon
@@ -45,6 +57,7 @@ export function Sidebar({ tenantName }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={`${styles.navItem} ${isActive ? styles.active : ''}`}
+              aria-current={isActive ? 'page' : undefined}
             >
               <Icon size={18} />
               <span>{item.label}</span>
@@ -54,7 +67,7 @@ export function Sidebar({ tenantName }: SidebarProps) {
       </nav>
 
       <div className={styles.footer}>
-        <button className={styles.logout} onClick={handleLogout}>
+        <button className={styles.logout} onClick={handleLogout} aria-label="Log out">
           <LogOut size={18} />
           <span>Logout</span>
         </button>

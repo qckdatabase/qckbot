@@ -1,8 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
 
 export default function LoginPage() {
@@ -11,42 +10,43 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const [supabase] = useState(() =>
-    typeof window !== 'undefined' ? createClient() : null
-  )
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    if (searchParams.get('error') === 'deactivated') {
+      setError('Your account has been deactivated. Contact your administrator.')
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!supabase) return
     setError('')
     setLoading(true)
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       })
 
-      if (error) {
-        setError(error.message)
+      if (res.redirected) {
+        router.push(res.url)
+        router.refresh()
         return
       }
 
-      if (data.user) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('needs_password_change, role')
-          .eq('id', data.user.id)
-          .single()
+      const data = await res.json()
 
-        if (userData?.needs_password_change) {
-          router.push('/change-password')
-        } else if (userData?.role === 'admin') {
-          router.push('/admin/clients')
-        } else {
-          router.push('/dashboard')
-        }
+      if (!res.ok) {
+        setError(data.error || 'Login failed')
+        return
       }
+
+      router.push(data.redirectTo || '/seo')
+      router.refresh()
+    } catch (err) {
+      setError('Failed to connect to server')
     } finally {
       setLoading(false)
     }

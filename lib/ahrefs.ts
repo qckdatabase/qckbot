@@ -1,18 +1,12 @@
-const AHFREFS_API_KEY = process.env.AHFREFS_API_KEY
-const AHFREFS_BASE_URL = 'https://api.ahrefs.com/v3'
+const AHREFS_API_TOKEN = process.env.AHREFS_API_TOKEN
+const AHREFS_BASE_URL = 'https://api.ahrefs.com/v3'
+const DEFAULT_COUNTRY = process.env.AHREFS_DEFAULT_COUNTRY || 'us'
 
 interface AhrefsMetrics {
   domain_rating: number
   organic_keywords: number
   backlinks: number
   est_monthly_traffic: number
-}
-
-interface AhrefsCompetitor {
-  domain: string
-  domain_rating: number
-  traffic: number
-  backlinks: number
 }
 
 interface AhrefsKeyword {
@@ -23,108 +17,120 @@ interface AhrefsKeyword {
   url: string
 }
 
-export async function getSiteMetrics(domain: string): Promise<AhrefsMetrics> {
-  const url = new URL(`${AHFREFS_BASE_URL}/site-explorer/overview`)
-  url.searchParams.set('target', domain)
-  url.searchParams.set('mode', 'domain')
-
-  const response = await fetch(url.toString(), {
-    headers: {
-      'Authorization': `Bearer ${AHFREFS_API_KEY}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`Ahrefs API error: ${response.statusText}`)
-  }
-
-  const data = await response.json()
-
-  return {
-    domain_rating: data.domain_rating || 0,
-    organic_keywords: data.organic_keywords || 0,
-    backlinks: data.refdomains || 0,
-    est_monthly_traffic: data.organic_traffic || 0,
-  }
-}
-
-export async function getCompetitors(domain: string): Promise<AhrefsCompetitor[]> {
-  const url = new URL(`${AHFREFS_BASE_URL}/site-explorer/competitors`)
-  url.searchParams.set('target', domain)
-  url.searchParams.set('mode', 'domain')
-
-  const response = await fetch(url.toString(), {
-    headers: {
-      'Authorization': `Bearer ${AHFREFS_API_KEY}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`Ahrefs API error: ${response.statusText}`)
-  }
-
-  const data = await response.json()
-
-  return (data.competitors || []).map((c: AhrefsCompetitor) => ({
-    domain: c.domain,
-    domain_rating: c.domain_rating || 0,
-    traffic: c.traffic || 0,
-    backlinks: c.backlinks || 0,
-  }))
-}
-
-export async function getKeywords(domain: string, limit = 100): Promise<AhrefsKeyword[]> {
-  const url = new URL(`${AHFREFS_BASE_URL}/site-explorer/keywords`)
-  url.searchParams.set('target', domain)
-  url.searchParams.set('mode', 'domain')
-  url.searchParams.set('limit', limit.toString())
-
-  const response = await fetch(url.toString(), {
-    headers: {
-      'Authorization': `Bearer ${AHFREFS_API_KEY}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`Ahrefs API error: ${response.statusText}`)
-  }
-
-  const data = await response.json()
-
-  return (data.keywords || []).map((k: AhrefsKeyword) => ({
-    keyword: k.keyword,
-    position: k.position || 0,
-    volume: k.volume || 0,
-    difficulty: k.difficulty || 0,
-    url: k.url || '',
-  }))
-}
-
-export async function getBacklinks(domain: string, limit = 100): Promise<Array<{
+interface AhrefsBacklink {
   url: string
   domain_rating: number
   traffic: number
-}>> {
-  const url = new URL(`${AHFREFS_BASE_URL}/site-explorer/backlinks`)
-  url.searchParams.set('target', domain)
-  url.searchParams.set('mode', 'domain')
-  url.searchParams.set('limit', limit.toString())
+}
+
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+async function ahrefsGet<T>(path: string, params: Record<string, string>): Promise<T> {
+  if (!AHREFS_API_TOKEN) {
+    throw new Error('AHREFS_API_TOKEN not configured')
+  }
+
+  const url = new URL(`${AHREFS_BASE_URL}${path}`)
+  for (const [k, v] of Object.entries(params)) {
+    url.searchParams.set(k, v)
+  }
 
   const response = await fetch(url.toString(), {
     headers: {
-      'Authorization': `Bearer ${AHFREFS_API_KEY}`,
+      Authorization: `Bearer ${AHREFS_API_TOKEN}`,
+      Accept: 'application/json',
     },
   })
 
   if (!response.ok) {
-    throw new Error(`Ahrefs API error: ${response.statusText}`)
+    const body = await response.text().catch(() => '')
+    throw new Error(
+      `Ahrefs ${path} ${response.status} ${response.statusText}${body ? `: ${body.slice(0, 300)}` : ''}`
+    )
   }
 
-  const data = await response.json()
+  return response.json() as Promise<T>
+}
 
-  return (data.backlinks || []).map((b: { url: string; domain_rating: number; traffic: number }) => ({
-    url: b.url,
-    domain_rating: b.domain_rating || 0,
-    traffic: b.traffic || 0,
+export async function getSiteMetrics(domain: string): Promise<AhrefsMetrics> {
+  const date = todayISO()
+
+  const [drRes, metricsRes, backlinksRes] = await Promise.all([
+    ahrefsGet<{ domain_rating: { domain_rating: number | null } }>(
+      '/site-explorer/domain-rating',
+      { target: domain, date, protocol: 'both' }
+    ),
+    ahrefsGet<{ metrics: { org_keywords: number; org_traffic: number } }>(
+      '/site-explorer/metrics',
+      { target: domain, date, mode: 'subdomains', protocol: 'both' }
+    ),
+    ahrefsGet<{ metrics: { live: number; live_refdomains: number } }>(
+      '/site-explorer/backlinks-stats',
+      { target: domain, date }
+    ),
+  ])
+
+  return {
+    domain_rating: drRes.domain_rating?.domain_rating ?? 0,
+    organic_keywords: metricsRes.metrics?.org_keywords ?? 0,
+    backlinks: backlinksRes.metrics?.live_refdomains ?? 0,
+    est_monthly_traffic: metricsRes.metrics?.org_traffic ?? 0,
+  }
+}
+
+export async function getKeywords(domain: string, limit = 100): Promise<AhrefsKeyword[]> {
+  const date = todayISO()
+  const data = await ahrefsGet<{
+    keywords: Array<{
+      keyword: string
+      best_position: number | null
+      volume: number | null
+      keyword_difficulty: number | null
+      best_position_url: string | null
+    }>
+  }>('/site-explorer/organic-keywords', {
+    target: domain,
+    date,
+    country: DEFAULT_COUNTRY,
+    select: 'keyword,best_position,volume,keyword_difficulty,best_position_url',
+    order_by: 'volume:desc',
+    limit: String(limit),
+    mode: 'subdomains',
+    protocol: 'both',
+  })
+
+  return (data.keywords || []).map((k) => ({
+    keyword: k.keyword,
+    position: k.best_position ?? 0,
+    volume: k.volume ?? 0,
+    difficulty: k.keyword_difficulty ?? 0,
+    url: k.best_position_url ?? '',
+  }))
+}
+
+export async function getBacklinks(domain: string, limit = 100): Promise<AhrefsBacklink[]> {
+  const data = await ahrefsGet<{
+    backlinks: Array<{
+      url_from: string
+      domain_rating_source: number | null
+      traffic_domain: number | null
+    }>
+  }>('/site-explorer/all-backlinks', {
+    target: domain,
+    select: 'url_from,domain_rating_source,traffic_domain',
+    order_by: 'domain_rating_source:desc',
+    limit: String(limit),
+    mode: 'subdomains',
+    protocol: 'both',
+    aggregation: '1_per_domain',
+    history: 'live',
+  })
+
+  return (data.backlinks || []).map((b) => ({
+    url: b.url_from,
+    domain_rating: b.domain_rating_source ?? 0,
+    traffic: b.traffic_domain ?? 0,
   }))
 }

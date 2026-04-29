@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/ui/modal'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { createClient } from '@/lib/supabase/client'
 import styles from './add-client-modal.module.css'
 
 export function AddClientModal() {
@@ -16,7 +15,6 @@ export function AddClientModal() {
   const [tempPassword, setTempPassword] = useState<string | null>(null)
   const [error, setError] = useState('')
   const router = useRouter()
-  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,42 +22,22 @@ export function AddClientModal() {
     setLoading(true)
 
     try {
-      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-        email,
-        email_confirm: true,
-      })
-
-      if (authError) {
-        setError(authError.message)
-        return
-      }
-
-      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-      const { data: tenant, error: tenantError } = await supabase
-        .from('tenants')
-        .insert({ name, slug, owner_email: email })
-        .select()
-        .single()
-
-      if (tenantError) {
-        setError(tenantError.message)
-        return
-      }
-
-      await supabase.from('users').insert({
-        id: authUser.user!.id,
-        tenant_id: tenant.id,
-        email,
-        role: 'client',
-        needs_password_change: true,
-      })
-
       const tempPw = Math.random().toString(36).slice(-8)
-      await supabase.auth.admin.updateUserById(authUser.user!.id, {
-        password: tempPw,
+
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name, tempPassword: tempPw }),
       })
 
-      setTempPassword(tempPw)
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || 'Failed to create client')
+        return
+      }
+
+      setTempPassword(data.tempPassword)
     } finally {
       setLoading(false)
     }

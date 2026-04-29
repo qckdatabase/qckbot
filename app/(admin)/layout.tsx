@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { getSession } from '@/lib/auth/session'
+import { AdminSidebar } from '@/components/admin/admin-sidebar'
 import styles from './layout.module.css'
 
 export default async function AdminLayout({
@@ -7,23 +8,20 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
+  const { session } = await getSession()
 
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
+  if (!session.user) {
     redirect('/login')
   }
 
-  const { data: userData } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (userData?.role !== 'admin') {
-    redirect('/dashboard')
+  if (session.user.role !== 'admin') {
+    redirect('/seo')
   }
 
-  return <div className={styles.layout}>{children}</div>
+  return (
+    <div className={styles.layout}>
+      <AdminSidebar email={session.user.email} />
+      <main className={styles.main}>{children}</main>
+    </div>
+  )
 }
