@@ -149,8 +149,13 @@
 }
 
 .inputCard:focus-within {
-  border-color: var(--color-accent-dark);
-  box-shadow: 0 0 0 3px rgba(15, 51, 63, 0.08), var(--shadow-md);
+  border-color: var(--color-border-strong);
+}
+
+.textarea:focus,
+.textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 .textareaWrap {
