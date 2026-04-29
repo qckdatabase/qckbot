@@ -8,14 +8,15 @@
 
 .table {
   width: 100%;
-  min-width: 560px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: var(--text-base);
+  table-layout: auto;
 }
 
 .table td {
-  white-space: nowrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .table thead {
