@@ -520,16 +520,17 @@ export async function POST(request: Request) {
 async function handlePlanNextMonth(db: SupabaseClient, tenantId: string): Promise<Response> {
   const planResult = await runMonthPlan(db, { tenantId })
   if (!planResult.ok) {
-    const reply =
-      planResult.code === 'cap_reached'
-        ? MONTHLY_CAP_MESSAGE
-        : `Could not plan next month: ${planResult.error}`
+    const isCapReached =
+      planResult.code === 'cap_reached' || planResult.code === 'all_slots_taken'
+    const reply = isCapReached
+      ? MONTHLY_CAP_MESSAGE
+      : `Could not plan next month: ${planResult.error}`
     await db.from('chat_messages').insert({
       tenant_id: tenantId,
       role: 'assistant',
       content: reply,
     })
-    return Response.json({ response: reply, campaign_id: null }, { status: planResult.status })
+    return Response.json({ response: reply, campaign_id: null })
   }
 
   const inserted = planResult.campaigns
