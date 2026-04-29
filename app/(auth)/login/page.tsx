@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import styles from './page.module.css'
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -45,7 +45,7 @@ export default function LoginPage() {
 
       router.push(data.redirectTo || '/seo')
       router.refresh()
-    } catch (err) {
+    } catch {
       setError('Failed to connect to server')
     } finally {
       setLoading(false)
@@ -86,5 +86,13 @@ export default function LoginPage() {
         {loading ? 'Signing in...' : 'Sign in'}
       </button>
     </form>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className={styles.form}><h1 className={styles.title}>Sign in</h1></div>}>
+      <LoginForm />
+    </Suspense>
   )
 }

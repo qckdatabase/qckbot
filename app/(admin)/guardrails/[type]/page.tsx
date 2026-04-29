@@ -218,7 +218,7 @@ export default function AdminGuardrailTypePage({
         {deleteFieldTarget && (
           <div className={styles.confirmBody}>
             <p>
-              Removes the <code>{deleteFieldTarget}</code> template from <code>{contentType}</code> globally. AI generation for this content type will lose this field's rules.
+              Removes the <code>{deleteFieldTarget}</code> template from <code>{contentType}</code> globally. AI generation for this content type will lose this field&apos;s rules.
             </p>
             <p className={styles.confirmWarning}>This cannot be undone.</p>
             <div className={styles.formActions}>
