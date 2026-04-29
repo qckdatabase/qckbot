@@ -58,6 +58,50 @@ interface RawOutput {
   results: SerpResult[]
 }
 
+function recoverTruncatedJson(text: string): RawOutput | null {
+  const start = text.indexOf('"results"')
+  if (start === -1) return null
+  const arrStart = text.indexOf('[', start)
+  if (arrStart === -1) return null
+
+  const items: SerpResult[] = []
+  let i = arrStart + 1
+  while (i < text.length) {
+    while (i < text.length && /\s|,/.test(text[i])) i++
+    if (text[i] !== '{') break
+    let depth = 0
+    let inStr = false
+    let esc = false
+    let objStart = i
+    for (; i < text.length; i++) {
+      const ch = text[i]
+      if (inStr) {
+        if (esc) esc = false
+        else if (ch === '\\') esc = true
+        else if (ch === '"') inStr = false
+        continue
+      }
+      if (ch === '"') inStr = true
+      else if (ch === '{') depth++
+      else if (ch === '}') {
+        depth--
+        if (depth === 0) {
+          const slice = text.slice(objStart, i + 1)
+          try {
+            items.push(JSON.parse(slice) as SerpResult)
+          } catch {
+            return items.length ? { results: items } : null
+          }
+          i++
+          break
+        }
+      }
+    }
+    if (depth !== 0) break
+  }
+  return items.length ? { results: items } : null
+}
+
 function normalizeDomain(input: string): string {
   return input
     .toLowerCase()
@@ -87,13 +131,13 @@ export async function checkSerp({
       {
         role: 'system',
         content:
-          `You are a SERP (search engine results page) analyst. Use web search to fetch the top 20 organic Google results for a query and return them as structured JSON.\n` +
+          `You are a SERP (search engine results page) analyst. Use web search to fetch the top 15 organic Google results for a query and return them as structured JSON.\n` +
           `Rules:\n` +
           `1. Search the literal query as provided.\n` +
-          `2. Return up to 20 organic results in the order they appeared. Skip ads, "people also ask" boxes, image carousels, and video carousels.\n` +
+          `2. Return up to 15 organic results in the order they appeared. Skip ads, "people also ask" boxes, image carousels, and video carousels.\n` +
           `3. For each result, include the 1-based position, full URL, page title, and the bare ROOT DOMAIN (no protocol, no www, no path).\n` +
-          `4. Do not invent results. If fewer than 20 organic listings appeared, return only what you saw.\n` +
-          `Return ONLY valid JSON matching the schema.`,
+          `4. Do not invent results. If fewer than 15 organic listings appeared, return only what you saw.\n` +
+          `Return ONLY valid JSON matching the schema. No markdown fences, no commentary.`,
       },
       {
         role: 'user',
@@ -108,15 +152,31 @@ export async function checkSerp({
         schema: SERP_SCHEMA as Record<string, unknown>,
       },
     },
-    max_output_tokens: 4096,
+    max_output_tokens: 8192,
   })
 
-  const text = response.output_text ?? ''
+  const rawText = response.output_text ?? ''
+  const text = rawText
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim()
+
   let parsed: RawOutput
   try {
     parsed = JSON.parse(text) as RawOutput
   } catch {
-    throw new Error(`SERP parse failed: ${text.slice(0, 200)}`)
+    const recovered = recoverTruncatedJson(text)
+    if (recovered) {
+      parsed = recovered
+    } else {
+      const status = (response as unknown as { status?: string }).status
+      const reason = (response as unknown as { incomplete_details?: { reason?: string } })
+        .incomplete_details?.reason
+      throw new Error(
+        `SERP parse failed (status=${status || 'unknown'}, reason=${reason || 'unknown'}): ${text.slice(0, 300)}`
+      )
+    }
   }
 
   const results = parsed.results
