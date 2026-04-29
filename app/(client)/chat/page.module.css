@@ -2,10 +2,18 @@
   display: flex;
   flex-direction: column;
   height: calc(100vh - 100px);
+  height: calc(100dvh - 100px);
   width: 100%;
   max-width: 1188px;
   margin: 0 auto;
   position: relative;
+}
+
+@media (max-width: 1023px) {
+  .page {
+    height: calc(100vh - 140px);
+    height: calc(100dvh - 140px);
+  }
 }
 
 .hero {

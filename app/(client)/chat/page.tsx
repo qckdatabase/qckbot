@@ -268,6 +268,14 @@ export default function ChatPage() {
               adjustHeight()
             }}
             onKeyDown={handleKeyDown}
+            onFocus={() => {
+              setTimeout(() => {
+                textareaRef.current?.scrollIntoView({
+                  block: 'end',
+                  behavior: 'smooth',
+                })
+              }, 300)
+            }}
             placeholder="Ask anything about your SEO data..."
             disabled={sending}
             rows={1}
