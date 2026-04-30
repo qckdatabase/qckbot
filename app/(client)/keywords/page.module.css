@@ -165,28 +165,30 @@
   padding: 2px var(--space-2);
   font-size: 11px;
   font-weight: 600;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
   text-transform: capitalize;
 }
 
 .intentInformational {
-  background: rgba(59, 130, 246, 0.12);
-  color: #2563eb;
+  background: hsl(var(--qck-cyan-light));
+  color: hsl(var(--qck-dark-blue));
 }
 
 .intentCommercial {
-  background: rgba(245, 158, 11, 0.14);
-  color: #b45309;
+  background: hsl(var(--qck-yellow) / 0.2);
+  color: hsl(var(--qck-dark));
 }
 
 .intentTransactional {
-  background: rgba(16, 185, 129, 0.14);
-  color: #047857;
+  background: hsl(var(--qck-cyan-light));
+  color: hsl(var(--qck-dark-blue));
 }
 
 .intentNavigational {
-  background: rgba(139, 92, 246, 0.14);
-  color: #6d28d9;
+  background: hsl(var(--qck-dark-blue));
+  color: hsl(var(--qck-white));
 }
 
 .intentUnknown {
@@ -305,22 +307,23 @@
   padding: 1px var(--space-2);
   font-size: 10px;
   font-weight: 600;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .sourceWebsearch {
-  background: rgba(59, 130, 246, 0.12);
-  color: #2563eb;
+  background: hsl(var(--qck-cyan-light));
+  color: hsl(var(--qck-dark-blue));
 }
 
 .sourceCampaign {
-  background: rgba(245, 158, 11, 0.14);
-  color: #b45309;
+  background: hsl(var(--qck-yellow) / 0.2);
+  color: hsl(var(--qck-dark));
 }
 
 .sourceSeo {
-  background: rgba(16, 185, 129, 0.14);
-  color: #047857;
+  background: hsl(var(--qck-cyan-light));
+  color: hsl(var(--qck-dark-blue));
 }

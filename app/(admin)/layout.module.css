@@ -1,12 +1,13 @@
 .layout {
   display: flex;
   min-height: 100vh;
+  background: hsl(var(--surface-muted));
 }
 
 .main {
   flex: 1;
   min-width: 0;
-  background: var(--color-surface);
+  background: transparent;
   padding: var(--space-6);
   overflow-y: auto;
 }

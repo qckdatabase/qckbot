@@ -258,7 +258,9 @@ export default function SEOPage() {
               <Table headers={['Keyword', 'Pos', 'Volume', 'KD']}>
                 {paginate(keywords, keywordsPage, PAGE_SIZE).map((k, i) => (
                   <tr key={`${k.keyword}-${i}`}>
-                    <td className={styles.keywordCell}>{k.keyword}</td>
+                    <td className={styles.keywordCell} title={k.keyword}>
+                      <span className={styles.truncateText}>{k.keyword}</span>
+                    </td>
                     <td>
                       <span className={styles.positionPill}>#{k.position}</span>
                     </td>

@@ -1,29 +1,136 @@
-.container {
-  min-height: 100vh;
+.root {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 1fr;
+  background: hsl(var(--surface-muted));
+}
+
+.brandPanel {
+  display: none;
+  position: relative;
+  overflow: hidden;
+  background: hsl(var(--qck-dark));
+  color: hsl(var(--qck-white));
+  padding: var(--space-10);
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+@media (min-width: 1024px) {
+  .root {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .brandPanel {
+    display: flex;
+  }
+}
+
+.brandGlow {
+  position: absolute;
+  inset: -128px;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--qck-cyan)),
+    hsl(var(--qck-dark-blue)),
+    hsl(var(--qck-cyan))
+  );
+  opacity: 0.18;
+  filter: blur(48px);
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.brandHeader {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.brandLogoChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: hsl(var(--qck-dark-blue));
+}
+
+.brandLogoChip img {
+  display: block;
+  width: 59px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.brandBadge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  opacity: 0.6;
+}
+
+.brandBody {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 480px;
+}
+
+.brandEyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.brandHeadline {
+  font-family: var(--font-heading);
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: hsl(var(--qck-white));
+  margin: 0;
+}
+
+.brandSub {
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.brandFooter {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  opacity: 0.5;
+  margin: 0;
+}
+
+.formPanel {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-surface);
-  padding: var(--space-4);
+  padding: var(--space-6) var(--space-4);
+  min-height: 100dvh;
 }
 
-.card {
-  background: var(--color-bg);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  padding: var(--space-8);
-  width: 100%;
-  max-width: 400px;
-}
-
-.logo {
-  text-align: center;
-  margin-bottom: var(--space-6);
-}
-
-.logoText {
-  font-family: var(--font-heading);
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--color-text);
+@media (min-width: 1024px) {
+  .formPanel {
+    padding: var(--space-12);
+    min-height: unset;
+    background: hsl(var(--surface-muted));
+  }
 }

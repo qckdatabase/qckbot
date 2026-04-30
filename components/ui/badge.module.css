@@ -6,37 +6,39 @@
   border-radius: var(--radius-pill);
   font-size: var(--text-xs);
   font-weight: 600;
-  letter-spacing: 0.02em;
+  font-family: var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   border: 1px solid transparent;
   white-space: nowrap;
 }
 
 .default {
-  background: var(--color-surface);
-  color: var(--color-text);
-  border-color: var(--color-border);
+  background: hsl(var(--surface-muted));
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--hairline));
 }
 
 .success {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--color-success);
-  border-color: rgba(16, 185, 129, 0.2);
+  background: hsl(var(--qck-cyan-light));
+  color: hsl(var(--qck-dark-blue));
+  border-color: hsl(var(--qck-cyan) / 0.26);
 }
 
 .warning {
-  background: rgba(245, 158, 11, 0.12);
-  color: #b45309;
-  border-color: rgba(245, 158, 11, 0.25);
+  background: hsl(var(--qck-yellow) / 0.2);
+  color: hsl(var(--qck-dark));
+  border-color: hsl(var(--qck-yellow) / 0.42);
 }
 
 .error {
-  background: rgba(239, 68, 68, 0.1);
+  background: hsl(0 84% 60% / 0.1);
   color: var(--color-error);
-  border-color: rgba(239, 68, 68, 0.2);
+  border-color: hsl(0 84% 60% / 0.2);
 }
 
 .new {
-  background: var(--color-accent);
-  color: var(--color-accent-dark);
+  background: hsl(var(--qck-dark-blue));
+  color: hsl(var(--qck-white));
   border-color: transparent;
 }

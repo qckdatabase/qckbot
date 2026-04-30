@@ -155,8 +155,15 @@
 
 .keywordCell {
   font-weight: 500;
-  word-break: break-word;
   max-width: 280px;
+}
+
+.truncateText {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .positionPill {
@@ -173,21 +180,30 @@
 
 .urlCell {
   max-width: 280px;
-  word-break: break-all;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .urlCell a {
-  display: inline-block;
+  display: block;
   max-width: 100%;
-  word-break: break-all;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--color-accent-dark);
   text-decoration: underline;
 }
 
 @media (max-width: 640px) {
+  .page :global(th),
+  .page :global(td) {
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+  }
+
+  .keywordCell,
   .urlCell {
-    max-width: 180px;
+    max-width: 120px;
   }
 }
 

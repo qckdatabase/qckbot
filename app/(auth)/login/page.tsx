@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { Lock } from 'lucide-react'
 import styles from './page.module.css'
 
 function LoginForm() {
@@ -54,36 +55,47 @@ function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
-      <h1 className={styles.title}>Sign in</h1>
+      <div className={styles.lockIcon}>
+        <Lock size={18} />
+      </div>
+
+      <div className={styles.heading}>
+        <h1 className={styles.title}>Sign in</h1>
+        <p className={styles.subtitle}>Enter your credentials to continue.</p>
+      </div>
 
       {error && <div className={styles.error}>{error}</div>}
 
-      <div className={styles.field}>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
-          required
-        />
-      </div>
+      <div className={styles.fields}>
+        <label className={styles.label} htmlFor="email">
+          <span className={styles.labelText}>Email</span>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className={styles.input}
+            required
+          />
+        </label>
 
-      <div className={styles.field}>
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Your password"
-          required
-        />
+        <label className={styles.label} htmlFor="password">
+          <span className={styles.labelText}>Password</span>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Your password"
+            className={styles.input}
+            required
+          />
+        </label>
       </div>
 
       <button type="submit" className={styles.button} disabled={loading}>
-        {loading ? 'Signing in...' : 'Sign in'}
+        {loading ? 'Signing in…' : 'Sign in'}
       </button>
     </form>
   )
@@ -91,7 +103,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className={styles.form}><h1 className={styles.title}>Sign in</h1></div>}>
+    <Suspense fallback={<div className={styles.form}><div className={styles.lockIcon}><Lock size={18} /></div></div>}>
       <LoginForm />
     </Suspense>
   )

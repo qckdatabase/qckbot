@@ -100,8 +100,8 @@
   font-size: var(--text-sm);
   color: var(--color-error);
   padding: var(--space-2) var(--space-3);
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: hsl(0 84% 60% / 0.08);
+  border: 1px solid hsl(0 84% 60% / 0.2);
   border-radius: var(--radius-md);
 }
 
@@ -143,9 +143,9 @@
 }
 
 .cardDelete:hover {
-  background: rgba(239, 68, 68, 0.08);
+  background: hsl(0 84% 60% / 0.08);
   color: var(--color-error);
-  border-color: rgba(239, 68, 68, 0.3);
+  border-color: hsl(0 84% 60% / 0.3);
 }
 
 .confirmBody {

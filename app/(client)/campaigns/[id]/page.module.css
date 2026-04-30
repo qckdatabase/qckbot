@@ -291,7 +291,7 @@
 }
 
 .prose tbody tr:nth-child(even) {
-  background: rgba(0, 0, 0, 0.015);
+  background: hsl(var(--surface-muted) / 0.72);
 }
 
 .prose img {

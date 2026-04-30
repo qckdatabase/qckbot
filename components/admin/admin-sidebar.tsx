@@ -52,9 +52,8 @@ export function AdminSidebar({ email }: AdminSidebarProps) {
         <div className={styles.mobileBrand}>
           <span className={styles.brandWrap}>
             <span className={styles.logoMark}>
-              <img src="/logo.png" alt="QCK" />
+              <img src="/qck-light-logo.png" alt="QCK" />
             </span>
-            <span className={styles.logo}>BOT</span>
           </span>
           <span className={styles.tag}>Admin</span>
         </div>
@@ -73,9 +72,8 @@ export function AdminSidebar({ email }: AdminSidebarProps) {
           <div className={styles.brand}>
             <div className={styles.brandWrap}>
               <span className={styles.logoMark}>
-                <img src="/logo.png" alt="QCK" />
+                <img src="/qck-light-logo.png" alt="QCK" />
               </span>
-              <span className={styles.logo}>BOT</span>
             </div>
             <span className={styles.tag}>Admin</span>
             <button

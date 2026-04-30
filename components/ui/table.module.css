@@ -1,9 +1,9 @@
 .wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg);
+  border: 1px solid hsl(var(--hairline));
+  border-radius: var(--radius-xl);
+  background: hsl(var(--surface));
 }
 
 .table {
@@ -20,18 +20,19 @@
 }
 
 .table thead {
-  background: var(--color-surface);
+  background: hsl(var(--surface-muted));
 }
 
 .table th {
   padding: var(--space-3) var(--space-4);
   text-align: left;
   font-weight: 600;
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-text-muted);
-  border-bottom: 1px solid var(--color-border);
+  letter-spacing: 0.18em;
+  color: hsl(var(--muted-foreground));
+  border-bottom: 1px solid hsl(var(--hairline));
   white-space: nowrap;
   position: sticky;
   top: 0;
@@ -39,8 +40,8 @@
 
 .table td {
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border);
-  color: var(--color-text);
+  border-bottom: 1px solid hsl(var(--hairline));
+  color: hsl(var(--foreground));
   vertical-align: middle;
 }
 
@@ -53,9 +54,9 @@
 }
 
 .table tbody tr:hover {
-  background: var(--color-surface);
+  background: hsl(var(--surface-muted));
 }
 
 .table tbody tr:focus-within {
-  background: var(--color-surface);
+  background: hsl(var(--accent));
 }

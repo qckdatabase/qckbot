@@ -5,9 +5,12 @@
 }
 
 .label {
+  font-family: var(--font-mono);
   font-weight: 500;
-  font-size: var(--text-base);
-  color: var(--color-text);
+  font-size: var(--text-xs);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground));
 }
 
 .required {
@@ -17,28 +20,28 @@
 
 .input {
   padding: 10px var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid hsl(var(--hairline));
+  border-radius: var(--radius-lg);
   font-size: var(--text-base);
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: hsl(var(--surface));
+  color: hsl(var(--foreground));
   transition: border-color var(--duration-fast) var(--ease-out),
     box-shadow var(--duration-fast) var(--ease-out);
   min-height: 40px;
 }
 
 .input:hover:not(:disabled) {
-  border-color: var(--color-border-strong);
+  border-color: hsl(var(--border));
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--color-accent-dark);
-  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  border-color: hsl(var(--qck-cyan));
+  box-shadow: 0 0 0 3px hsl(var(--qck-cyan) / 0.22);
 }
 
 .input:disabled {
-  background: var(--color-surface);
+  background: hsl(var(--surface-muted));
   color: var(--color-text-muted);
   cursor: not-allowed;
 }
@@ -48,7 +51,7 @@
 }
 
 .input.error:focus {
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 0 0 3px hsl(0 84% 60% / 0.2);
 }
 
 .errorText {

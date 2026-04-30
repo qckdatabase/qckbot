@@ -5,21 +5,22 @@
 }
 
 .title {
-  font-size: 20px;
+  font-size: var(--text-xl);
   text-align: center;
   margin-bottom: var(--space-2);
+  color: hsl(var(--foreground));
 }
 
 .subtitle {
   text-align: center;
-  color: var(--color-text-muted);
+  color: hsl(var(--muted-foreground));
   font-size: 14px;
   margin-top: calc(var(--space-2) * -1);
   margin-bottom: var(--space-2);
 }
 
 .error {
-  background: rgba(239, 68, 68, 0.1);
+  background: hsl(0 84% 60% / 0.1);
   border: 1px solid var(--color-error);
   color: var(--color-error);
   padding: var(--space-3);
@@ -34,34 +35,41 @@
 }
 
 .field label {
+  color: hsl(var(--muted-foreground));
+  font-family: var(--font-mono);
   font-weight: 500;
-  font-size: 14px;
+  font-size: var(--text-xs);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 .field input {
   padding: var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid hsl(var(--hairline));
+  border-radius: var(--radius-lg);
   font-size: 14px;
-  transition: border-color 150ms ease;
+  background: hsl(var(--surface));
+  transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
 }
 
 .field input:focus {
   outline: none;
-  border-color: var(--color-accent);
+  border-color: hsl(var(--qck-cyan));
+  box-shadow: 0 0 0 3px hsl(var(--qck-cyan) / 0.22);
 }
 
 .button {
   margin-top: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  background: var(--color-accent-dark);
-  color: white;
+  background: hsl(var(--cta));
+  color: hsl(var(--cta-foreground));
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  transition: opacity 150ms ease;
+  box-shadow: var(--shadow-cta);
+  transition: opacity var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
 }
 
 .button:hover:not(:disabled) {

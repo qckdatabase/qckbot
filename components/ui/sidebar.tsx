@@ -78,9 +78,8 @@ export function Sidebar({ tenantName }: SidebarProps) {
         <div className={styles.mobileBrand}>
           <span className={styles.brandWrap}>
             <span className={styles.logoMark}>
-              <img src="/logo.png" alt="QCK" />
+              <img src="/qck-light-logo.png" alt="QCK" />
             </span>
-            <span className={styles.logo}>BOT</span>
           </span>
         </div>
       </header>
@@ -98,9 +97,8 @@ export function Sidebar({ tenantName }: SidebarProps) {
           <div className={styles.brand}>
             <div className={styles.brandWrap}>
               <span className={styles.logoMark}>
-                <img src="/logo.png" alt="QCK" />
+                <img src="/qck-light-logo.png" alt="QCK" />
               </span>
-              <span className={styles.logo}>BOT</span>
             </div>
             <button
               className={styles.closeButton}
