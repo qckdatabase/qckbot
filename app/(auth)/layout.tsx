@@ -1,4 +1,6 @@
+import Image from 'next/image'
 import styles from './layout.module.css'
+import logoSrc from '@/public/qck-light-logo.png'
 
 export default function AuthLayout({
   children,
@@ -11,7 +13,7 @@ export default function AuthLayout({
         <div className={styles.brandGlow} aria-hidden />
         <div className={styles.brandHeader}>
           <span className={styles.brandLogoChip}>
-            <img src="/qck-light-logo.png" alt="QCK" />
+            <Image src={logoSrc} alt="QCK" width={67} height={25} />
           </span>
           <span className={styles.brandBadge}>/ Admin</span>
         </div>

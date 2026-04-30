@@ -4,7 +4,7 @@
   --qck-dark-blue: 196 45% 23%;
   --qck-cyan: 188 100% 48%;
   --qck-cyan-light: 188 100% 95%;
-  --qck-yellow: 54 100% 70%;
+  --qck-yellow: 52 100% 70%;
   --qck-gray: 205 7% 69%;
   --qck-light-bg: 0 0% 97%;
 
@@ -23,13 +23,28 @@
   --ring: var(--qck-cyan);
   --cta: var(--qck-yellow);
   --cta-foreground: var(--qck-dark);
+  --cta-hover: 52 100% 64%;
+  --cta-active: 52 100% 58%;
   --surface: var(--qck-white);
   --surface-muted: var(--qck-light-bg);
+  --surface-overlay: 0 0% 100%;
+  --surface-inverted: var(--qck-dark);
+
+  --success: 150 70% 33%;
+  --success-foreground: 0 0% 100%;
+  --success-surface: 150 50% 94%;
+  --warning: 36 100% 36%;
+  --warning-foreground: 0 0% 100%;
+  --warning-surface: 40 100% 93%;
+  --danger: 337 78% 43%;
+  --danger-foreground: 0 0% 100%;
+  --danger-surface: 343 80% 95%;
+
   --series-1: var(--qck-cyan);
   --series-2: var(--qck-dark-blue);
-  --series-3: var(--qck-yellow);
+  --series-3: 14 80% 50%;
   --series-4: var(--qck-dark);
-  --series-5: var(--qck-gray);
+  --series-5: 270 50% 55%;
 
   --color-bg: hsl(var(--background));
   --color-surface: hsl(var(--surface-muted));
@@ -42,16 +57,14 @@
   --color-accent-secondary: hsl(var(--qck-yellow));
   --color-accent-dark: hsl(var(--qck-dark));
   --color-accent-dark-hover: hsl(var(--qck-dark-blue));
-  --color-success: hsl(var(--qck-cyan));
-  --color-warning: hsl(var(--qck-yellow));
-  --color-error: #ef4444;
-  --color-overlay: hsl(var(--qck-dark) / 0.58);
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+  --color-error: hsl(var(--danger));
+  --color-overlay: hsl(var(--qck-dark) / 0.55);
   --color-focus-ring: hsl(var(--qck-cyan) / 0.35);
 
-  /* Typography */
-  --font-heading: 'Poppins', system-ui, sans-serif;
-  --font-body: 'Poppins', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* Typography - next/font sets --font-heading and --font-mono via class on html */
+  --font-body: var(--font-heading);
 
   /* Type scale (dashboard density) */
   --text-xs: 11px;
@@ -75,34 +88,92 @@
   --space-12: 48px;
 
   /* Radii */
-  --radius-sm: 8px;
-  --radius-md: 12px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
   --radius-lg: 16px;
   --radius-xl: 24px;
   --radius-pill: 999px;
 
   --gradient-aura: radial-gradient(ellipse at top, hsl(var(--qck-cyan) / 0.22), hsl(var(--qck-cyan-light) / 0.6), transparent 70%);
 
+  /* Gray ramp */
+  --gray-50: 205 14% 97%;
+  --gray-100: 205 14% 94%;
+  --gray-200: 205 14% 89%;
+  --gray-300: 205 12% 80%;
+  --gray-400: 205 10% 65%;
+  --gray-500: 205 10% 50%;
+  --gray-600: 205 10% 42%;
+  --gray-700: 205 14% 30%;
+  --gray-800: 196 30% 18%;
+  --gray-900: var(--qck-dark);
+
   /* Elevation */
+  --elevation-0: none;
+  --elevation-1: 0 4px 24px -1px hsl(var(--qck-dark) / 0.05), 0 2px 8px -1px hsl(var(--qck-dark) / 0.03);
+  --elevation-2: 0 24px 60px -20px hsl(var(--qck-dark) / 0.18), 0 8px 24px -8px hsl(var(--qck-dark) / 0.08);
+  --elevation-3: 0 24px 60px -20px hsl(var(--qck-dark) / 0.18), 0 8px 24px -8px hsl(var(--qck-dark) / 0.08), 0 0 0 1px hsl(var(--qck-dark) / 0.04);
+  --elevation-cta: 0 12px 32px -8px hsl(var(--qck-yellow) / 0.55);
+
+  --shadow-glass: var(--elevation-1);
+  --shadow-floating: var(--elevation-2);
+  --shadow-cta: var(--elevation-cta);
+
   --shadow-xs: 0 1px 1px hsl(var(--qck-dark) / 0.04);
-  --shadow-sm: 0 4px 24px -1px hsl(var(--qck-dark) / 0.05), 0 2px 8px -1px hsl(var(--qck-dark) / 0.03);
-  --shadow-md: 0 16px 40px -20px hsl(var(--qck-dark) / 0.16), 0 6px 18px -10px hsl(var(--qck-dark) / 0.08);
-  --shadow-lg: 0 24px 60px -20px hsl(var(--qck-dark) / 0.18), 0 8px 24px -8px hsl(var(--qck-dark) / 0.08);
-  --shadow-xl: 0 32px 80px -28px hsl(var(--qck-dark) / 0.22);
-  --shadow-cta: 0 12px 32px -8px hsl(var(--qck-yellow) / 0.55);
+  --shadow-sm: var(--elevation-1);
+  --shadow-md: var(--elevation-2);
+  --shadow-lg: 0 32px 80px -28px hsl(var(--qck-dark) / 0.22);
+
+  /* Border width scale */
+  --border-1: 1px;
+  --border-2: 2px;
+  --border-3: 3px;
 
   /* Motion */
+  --ease-glide: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --duration-fast: 120ms;
-  --duration-base: 180ms;
-  --duration-slow: 280ms;
+  --dur-instant: 120ms;
+  --dur-fast: 200ms;
+  --dur-base: 300ms;
+  --dur-slow: 500ms;
+  --dur-slower: 700ms;
+  --duration-fast: 200ms;
+  --duration-base: 300ms;
+  --duration-slow: 500ms;
 
-  /* Layers */
-  --z-sticky: 10;
-  --z-overlay: 40;
-  --z-modal: 100;
-  --z-toast: 1000;
+  /* Transition shorthands */
+  --transition-fast: var(--dur-fast) var(--ease-glide);
+  --transition-base: var(--dur-base) var(--ease-glide);
+  --transition-slow: var(--dur-slow) var(--ease-glide);
+  --transition-spring: var(--dur-base) var(--ease-spring);
+  --transition-exit: var(--dur-fast) var(--ease-exit);
+
+  /* State overlays */
+  --overlay-hover: hsl(0 0% 0% / 0.04);
+  --overlay-active: hsl(0 0% 0% / 0.08);
+  --opacity-disabled: 0.5;
+
+  /* Selection */
+  --selection: 188 70% 80%;
+  --selection-foreground: var(--qck-dark);
+
+  /* Density modes */
+  --density-row-default: 48px;
+  --density-row-compact: 36px;
+
+  /* Z-index scale */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-overlay: 1200;
+  --z-modal: 1300;
+  --z-popover: 1400;
+  --z-toast: 1500;
+  --z-tooltip: 1600;
 }
 
 * {
@@ -185,9 +256,8 @@ a:focus-visible {
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: none;
-  border-color: var(--color-accent-dark);
-  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 /* Scrollbar polish */
@@ -209,8 +279,8 @@ select:focus-visible {
 
 /* Selection */
 ::selection {
-  background: var(--color-accent);
-  color: var(--color-accent-dark);
+  background: hsl(var(--selection));
+  color: hsl(var(--selection-foreground));
 }
 
 /* Reduced motion */
@@ -255,4 +325,48 @@ select:focus-visible {
   display: block;
   width: 59px;
   height: 22px;
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  position: fixed;
+  top: var(--space-3);
+  left: var(--space-3);
+  width: auto;
+  height: auto;
+  clip: auto;
+  padding: var(--space-2) var(--space-4);
+  background: hsl(var(--foreground));
+  color: hsl(var(--qck-white));
+  border-radius: var(--radius-md);
+  z-index: 9999;
+  font-weight: 500;
+  font-size: var(--text-sm);
+}
+
+/* Input shell pattern for grouped inputs */
+.input-shell {
+  border: 1px solid hsl(var(--hairline));
+  border-radius: var(--radius-xl);
+  background: hsl(var(--surface));
+  transition: border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.input-shell:focus-within {
+  outline: 2px solid hsl(var(--qck-cyan));
+  outline-offset: 2px;
 }

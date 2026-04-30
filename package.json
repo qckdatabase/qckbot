@@ -13,13 +13,14 @@
     "@supabase/supabase-js": "^2.105.1",
     "bcryptjs": "^3.0.3",
     "iron-session": "^8.0.4",
-    "lucide-react": "^0.344.0",
+    "lucide-react": "^1.0.1",
     "next": "14.2.0",
     "openai": "^6.35.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

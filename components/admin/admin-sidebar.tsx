@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Users, Shield, LogOut, Menu, X } from 'lucide-react'
 import styles from './admin-sidebar.module.css'
+import logoSrc from '@/public/qck-light-logo.png'
 
 interface AdminSidebarProps {
   email: string
@@ -52,7 +54,7 @@ export function AdminSidebar({ email }: AdminSidebarProps) {
         <div className={styles.mobileBrand}>
           <span className={styles.brandWrap}>
             <span className={styles.logoMark}>
-              <img src="/qck-light-logo.png" alt="QCK" />
+              <Image src={logoSrc} alt="QCK" width={59} height={22} />
             </span>
           </span>
           <span className={styles.tag}>Admin</span>
@@ -72,7 +74,7 @@ export function AdminSidebar({ email }: AdminSidebarProps) {
           <div className={styles.brand}>
             <div className={styles.brandWrap}>
               <span className={styles.logoMark}>
-                <img src="/qck-light-logo.png" alt="QCK" />
+                <Image src={logoSrc} alt="QCK" width={59} height={22} />
               </span>
             </div>
             <span className={styles.tag}>Admin</span>

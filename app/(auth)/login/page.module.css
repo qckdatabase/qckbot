@@ -116,16 +116,20 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: var(--shadow-cta);
-  transition: opacity var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out);
+  transition: background var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .button:hover:not(:disabled) {
-  opacity: 0.92;
+  background: hsl(var(--cta-hover));
   box-shadow: var(--shadow-cta);
 }
 
+.button:active:not(:disabled) {
+  background: hsl(var(--cta-active));
+}
+
 .button:disabled {
-  opacity: 0.55;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }

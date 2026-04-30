@@ -19,22 +19,28 @@
   border-color: hsl(var(--hairline));
 }
 
-.success {
+.accent {
   background: hsl(var(--qck-cyan-light));
-  color: hsl(var(--qck-dark-blue));
+  color: hsl(var(--qck-dark));
   border-color: hsl(var(--qck-cyan) / 0.26);
 }
 
+.success {
+  background: hsl(var(--success-surface));
+  color: hsl(var(--success));
+  border-color: hsl(var(--success) / 0.26);
+}
+
 .warning {
-  background: hsl(var(--qck-yellow) / 0.2);
-  color: hsl(var(--qck-dark));
-  border-color: hsl(var(--qck-yellow) / 0.42);
+  background: hsl(var(--warning-surface));
+  color: hsl(var(--warning));
+  border-color: hsl(var(--warning) / 0.42);
 }
 
 .error {
-  background: hsl(0 84% 60% / 0.1);
-  color: var(--color-error);
-  border-color: hsl(0 84% 60% / 0.2);
+  background: hsl(var(--danger-surface));
+  color: hsl(var(--danger));
+  border-color: hsl(var(--danger) / 0.2);
 }
 
 .new {

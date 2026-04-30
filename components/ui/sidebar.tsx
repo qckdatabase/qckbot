@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   TrendingUp,
@@ -16,6 +17,7 @@ import {
   X,
 } from 'lucide-react'
 import styles from './sidebar.module.css'
+import logoSrc from '@/public/qck-light-logo.png'
 
 interface SidebarProps {
   tenantName: string
@@ -78,7 +80,7 @@ export function Sidebar({ tenantName }: SidebarProps) {
         <div className={styles.mobileBrand}>
           <span className={styles.brandWrap}>
             <span className={styles.logoMark}>
-              <img src="/qck-light-logo.png" alt="QCK" />
+              <Image src={logoSrc} alt="QCK" width={59} height={22} />
             </span>
             <span className={styles.productBadge}>Store Monitor</span>
           </span>
@@ -98,7 +100,7 @@ export function Sidebar({ tenantName }: SidebarProps) {
           <div className={styles.brand}>
             <div className={styles.brandWrap}>
               <span className={styles.logoMark}>
-                <img src="/qck-light-logo.png" alt="QCK" />
+                <Image src={logoSrc} alt="QCK" width={59} height={22} />
               </span>
               <span className={styles.productBadge}>Store Monitor</span>
             </div>

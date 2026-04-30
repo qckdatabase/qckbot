@@ -2,7 +2,7 @@ import { ReactNode } from 'react'
 import styles from './badge.module.css'
 
 interface BadgeProps {
-  variant?: 'default' | 'success' | 'warning' | 'error' | 'new'
+  variant?: 'default' | 'accent' | 'success' | 'warning' | 'error' | 'new'
   children: ReactNode
 }
 

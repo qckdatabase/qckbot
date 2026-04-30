@@ -38,7 +38,7 @@ export default async function ClientLayout({
   return (
     <div className={styles.layout}>
       <Sidebar tenantName={tenantName} />
-      <main className={styles.main}>{children}</main>
+      <main id="main" className={styles.main}>{children}</main>
       <RefreshBoot />
     </div>
   )

@@ -14,6 +14,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={`${styles.button} ${styles[variant]} ${styles[size]} ${className || ''}`}
         disabled={disabled || loading}
+        aria-disabled={disabled || loading ? true : undefined}
         {...props}
       >
         {loading ? 'Loading...' : children}
