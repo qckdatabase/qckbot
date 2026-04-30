@@ -43,7 +43,7 @@
 .brandWrap {
   display: inline-flex;
   align-items: center;
-  gap: 0;
+  gap: var(--space-2);
   background: transparent;
   padding: 0;
   border-radius: 0;
@@ -62,35 +62,17 @@
   display: block;
 }
 
-.tenantPill {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
+.productBadge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: hsl(var(--qck-white) / 0.9);
+  padding: 2px 8px;
   background: hsl(var(--qck-dark-blue));
   border: 1px solid hsl(var(--qck-white) / 0.08);
   border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  color: hsl(var(--qck-white) / 0.74);
-  width: fit-content;
-  max-width: 100%;
-}
-
-.tenantDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: hsl(var(--qck-cyan));
-  flex-shrink: 0;
-  box-shadow: 0 0 0 3px hsl(var(--qck-cyan) / 0.18);
-}
-
-.tenantName {
-  color: hsl(var(--qck-white));
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .navLabel {
@@ -163,6 +145,35 @@
 .footer {
   padding: var(--space-3);
   border-top: 1px solid hsl(var(--qck-dark-blue));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  overflow: hidden;
+}
+
+.userDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: hsl(var(--qck-cyan));
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px hsl(var(--qck-cyan) / 0.18);
+}
+
+.userName {
+  color: hsl(var(--qck-white) / 0.74);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .logout {

@@ -80,6 +80,7 @@ export function Sidebar({ tenantName }: SidebarProps) {
             <span className={styles.logoMark}>
               <img src="/qck-light-logo.png" alt="QCK" />
             </span>
+            <span className={styles.productBadge}>Store Monitor</span>
           </span>
         </div>
       </header>
@@ -99,6 +100,7 @@ export function Sidebar({ tenantName }: SidebarProps) {
               <span className={styles.logoMark}>
                 <img src="/qck-light-logo.png" alt="QCK" />
               </span>
+              <span className={styles.productBadge}>Store Monitor</span>
             </div>
             <button
               className={styles.closeButton}
@@ -107,10 +109,6 @@ export function Sidebar({ tenantName }: SidebarProps) {
             >
               <X size={18} />
             </button>
-          </div>
-          <div className={styles.tenantPill} title={tenantName}>
-            <span className={styles.tenantDot} aria-hidden />
-            <span className={styles.tenantName}>{tenantName}</span>
           </div>
         </div>
 
@@ -139,6 +137,10 @@ export function Sidebar({ tenantName }: SidebarProps) {
         </nav>
 
         <div className={styles.footer}>
+          <div className={styles.userInfo}>
+            <span className={styles.userDot} aria-hidden />
+            <span className={styles.userName} title={tenantName}>{tenantName}</span>
+          </div>
           <button
             className={styles.logout}
             onClick={handleLogout}
